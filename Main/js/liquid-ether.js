@@ -122,11 +122,15 @@ export function initLiquidEther(container, opts = {}) {
       this._onTS = this._touchStart.bind(this);
       this._onTM = this._touchMove.bind(this);
       this._onTE = this._touchEnd.bind(this);
+      this._onTC = this._touchCancel.bind(this);
       this._onML = this._mouseLeave.bind(this);
+      this._onScroll = this._scroll.bind(this);
       win.addEventListener('mousemove', this._onMM);
       win.addEventListener('touchstart', this._onTS, { passive: true });
       win.addEventListener('touchmove', this._onTM, { passive: true });
-      win.addEventListener('touchend', this._onTE);
+      win.addEventListener('touchend', this._onTE, { passive: true });
+      win.addEventListener('touchcancel', this._onTC, { passive: true });
+      win.addEventListener('scroll', this._onScroll, { passive: true });
       document.addEventListener('mouseleave', this._onML);
     },
     dispose() {
@@ -135,6 +139,8 @@ export function initLiquidEther(container, opts = {}) {
       this.listenerTarget.removeEventListener('touchstart', this._onTS);
       this.listenerTarget.removeEventListener('touchmove', this._onTM);
       this.listenerTarget.removeEventListener('touchend', this._onTE);
+      this.listenerTarget.removeEventListener('touchcancel', this._onTC);
+      this.listenerTarget.removeEventListener('scroll', this._onScroll);
       document.removeEventListener('mouseleave', this._onML);
     },
     _inside(cx, cy) {
@@ -169,25 +175,79 @@ export function initLiquidEther(container, opts = {}) {
       this._setCoords(e.clientX, e.clientY);
       this.hasUserControl = true;
     },
+    touchHoldTimer: null,
+    touchStartX: 0,
+    touchStartY: 0,
+    touchActive: false,
     _touchStart(e) {
       if (e.touches.length !== 1) return;
       const t = e.touches[0];
       this.isHoverInside = this._inside(t.clientX, t.clientY);
       if (!this.isHoverInside) return;
-      if (this.onInteract) this.onInteract();
-      this._setCoords(t.clientX, t.clientY);
-      this.hasUserControl = true;
+      
+      this.touchStartX = t.clientX;
+      this.touchStartY = t.clientY;
+      this.touchActive = false;
+      
+      if (this.touchHoldTimer) clearTimeout(this.touchHoldTimer);
+      this.touchHoldTimer = setTimeout(() => {
+        this.touchActive = true;
+        if (this.onInteract) this.onInteract();
+        this._setCoords(t.clientX, t.clientY);
+        this.hasUserControl = true;
+        this._showHoldHint(); // Optional hint shown once
+      }, 250);
     },
     _touchMove(e) {
       if (e.touches.length !== 1) return;
       const t = e.touches[0];
+      
+      if (!this.touchActive) {
+        // If moved significantly before 250ms, cancel the hold
+        const dist = Math.hypot(t.clientX - this.touchStartX, t.clientY - this.touchStartY);
+        if (dist > 10 && this.touchHoldTimer) {
+          clearTimeout(this.touchHoldTimer);
+          this.touchHoldTimer = null;
+          this.isHoverInside = false;
+        }
+        return;
+      }
+      
       this.isHoverInside = this._inside(t.clientX, t.clientY);
-      if (!this.isHoverInside) return;
+      if (!this.isHoverInside) {
+        this.touchActive = false;
+        return;
+      }
       if (this.onInteract) this.onInteract();
       this._setCoords(t.clientX, t.clientY);
     },
-    _touchEnd() { this.isHoverInside = false; },
+    _touchEnd() { 
+      if (this.touchHoldTimer) { clearTimeout(this.touchHoldTimer); this.touchHoldTimer = null; }
+      this.isHoverInside = false; 
+      this.touchActive = false;
+    },
+    _touchCancel() { this._touchEnd(); },
+    _scroll() { this._touchEnd(); },
     _mouseLeave() { this.isHoverInside = false; },
+    _showHoldHint() {
+      if (localStorage.getItem('holdHintShown')) return;
+      localStorage.setItem('holdHintShown', 'true');
+      const hint = document.createElement('div');
+      hint.textContent = 'HOLD TO PLAY';
+      hint.className = 'f-mono';
+      Object.assign(hint.style, {
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        color: 'var(--red)', fontSize: '0.8rem', zIndex: 9999, pointerEvents: 'none',
+        background: 'var(--paper)', padding: '0.4rem 0.8rem', border: '1px solid var(--ink)',
+        opacity: 0, transition: 'opacity 0.3s ease', borderRadius: '4px'
+      });
+      document.body.appendChild(hint);
+      requestAnimationFrame(() => hint.style.opacity = 1);
+      setTimeout(() => {
+        hint.style.opacity = 0;
+        setTimeout(() => hint.remove(), 300);
+      }, 2500);
+    },
     update() {
       if (this.takeoverActive) {
         const t = (performance.now() - this.takeoverStartTime) / (this.takeoverDuration * 1000);

@@ -32,13 +32,19 @@
       col.appendChild(document.createTextNode(' '));
     });
     ltCur = ltOut.map(() => 0);
+    window.triggerHeroReveal = () => {
+      if (!pinHero || pinHero.classList.contains('wm-go')) return;
+      pinHero.classList.add('wm-go');
+      setTimeout(() => {
+        pinHero.classList.add('wm-done');
+        ltIn.forEach(l => { l.style.transitionDelay = '0ms'; });
+        wmDone = true;
+      }, ltIn.length * 45 + 850);
+    };
     if (reduced) { pinHero.classList.add('wm-go', 'wm-done'); wmDone = true; return; }
-    requestAnimationFrame(() => requestAnimationFrame(() => pinHero.classList.add('wm-go')));
-    setTimeout(() => {
-      pinHero.classList.add('wm-done');
-      ltIn.forEach(l => { l.style.transitionDelay = '0ms'; });
-      wmDone = true;
-    }, ltIn.length * 45 + 850);
+    if (!window.preloaderActive) {
+      requestAnimationFrame(() => requestAnimationFrame(() => window.triggerHeroReveal()));
+    }
     cacheWm();
     if (document.fonts) document.fonts.ready.then(cacheWm);
   };
