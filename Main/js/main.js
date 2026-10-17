@@ -1,342 +1,269 @@
+/* Vercel Analytics — only on the deployed site */
+window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+  const va = document.createElement('script');
+  va.defer = true;
+  va.src = '/_vercel/insights/script.js';
+  document.head.appendChild(va);
+}
+
 (() => {
   'use strict';
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const easeOut = t => 1 - Math.pow(1 - t, 4);
+  const root = document.documentElement;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  let ltOut = [], ltIn = [], wmC = [], ltCur = [], mx = -9999, my = -9999, pinHero, heroP = 0, wmDone = false;
-  let allSections = [], pageCounter = null;
-
-  const initWordmark = () => {
-    const h1 = $('.wordmark');
-    if (!h1) return;
-    pinHero = $('.pin-hero');
-    $$('.wordmark span').forEach(col => {
-      const t = col.textContent;
-      col.textContent = '';
-      [...t].forEach(ch => {
-        const o = document.createElement('span');
-        o.className = 'ltw';
-        const i = document.createElement('span');
-        i.className = 'lt';
-        i.textContent = ch;
-        i.style.transitionDelay = (ltOut.length * 45) + 'ms';
-        o.appendChild(i);
-        col.appendChild(o);
-        ltOut.push(o);
-        ltIn.push(i);
-      });
-      col.appendChild(document.createTextNode(' '));
-    });
-    ltCur = ltOut.map(() => 0);
-    window.triggerHeroReveal = () => {
-      if (!pinHero || pinHero.classList.contains('wm-go')) return;
-      pinHero.classList.add('wm-go');
-      setTimeout(() => {
-        pinHero.classList.add('wm-done');
-        ltIn.forEach(l => { l.style.transitionDelay = '0ms'; });
-        wmDone = true;
-      }, ltIn.length * 45 + 850);
-    };
-    if (reduced) { pinHero.classList.add('wm-go', 'wm-done'); wmDone = true; return; }
-    if (!window.preloaderActive) {
-      requestAnimationFrame(() => requestAnimationFrame(() => window.triggerHeroReveal()));
-    }
-    cacheWm();
-    if (document.fonts) document.fonts.ready.then(cacheWm);
-  };
-
-  const cacheWm = () => {
-    if (!ltOut.length) return;
-    wmC = ltOut.map(o => {
-      const r = o.getBoundingClientRect();
-      return [r.left + r.width / 2, r.top + r.height / 2];
-    });
-  };
-
-  const heroFrame = () => {
-    if (!fine || reduced || !wmDone || heroP > 1.2) return;
-    const p = heroP;
-    for (let i = 0; i < ltIn.length; i++) {
-      const c = wmC[i];
-      const s = i * 0.055;
-      const w = clamp((p - s) / 0.14, 0, 1);
-      const inn = ltIn[i];
-      inn.style.clipPath = w > 0 ? `inset(-0.08em 0 -0.08em ${(w * 100).toFixed(1)}%)` : '';
-      let f = 0;
-      if (c) {
-        const d = Math.hypot(mx - c[0], my - c[1]);
-        if (d < 160) f = 1 - d / 160;
-      }
-      ltCur[i] += (f * 14 - ltCur[i]) * 0.18;
-      inn.style.transform = `translateY(${(-w * 26 - ltCur[i]).toFixed(2)}px)`;
-      if (f > 0.4) inn.classList.add('hot');
-      else inn.classList.remove('hot');
-    }
-  };
-
-  const initHeroPointer = () => {
-    if (!fine) return;
-    addEventListener('mousemove', e => {
-      mx = e.clientX;
-      my = e.clientY;
-    }, { passive: true });
-  };
+  const EMAIL = 'manavaghera@yahoo.com';
+  const MA = window.MA = window.MA || {};
+  let lenis = null;
 
   let toastT;
-  const toast = msg => {
+  const toast = MA.toast = msg => {
     const t = $('#toast');
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(toastT);
-    toastT = setTimeout(() => t.classList.remove('show'), 2600);
+    toastT = setTimeout(() => t.classList.remove('show'), 2200);
+  };
+  const goTo = MA.goTo = id => {
+    const target = id === '#top' ? 0 : $(id);
+    if (target == null) return;
+    if (lenis) lenis.scrollTo(target, { duration: 1.5 });
+    else if (target === 0) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    else target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
   };
 
-  const splitEl = el => {
-    [...el.childNodes].forEach(node => {
-      if (node.nodeType === 3) {
-        const frag = document.createDocumentFragment();
-        node.textContent.split(/(\s+)/).forEach(tok => {
-          if (!tok) return;
-          if (/^\s+$/.test(tok)) { frag.append(' '); return; }
-          const s = document.createElement('span');
-          s.className = 'w';
-          s.textContent = tok;
-          s.style.setProperty('--d', (splitEl.i++ * 36) + 'ms');
-          frag.append(s);
-        });
-        node.replaceWith(frag);
-      } else if (node.nodeType === 1 && node.tagName !== 'BR') {
-        splitEl(node);
-      }
-    });
+  /* ── nav + menu ── */
+  const nav = $('#nav'), menu = $('#menu'), menuBtn = $('#menuBtn');
+  let menuOpen = false;
+  const setMenu = open => {
+    menuOpen = open;
+    menu.classList.toggle('is-open', open);
+    menu.setAttribute('aria-hidden', String(!open));
+    menuBtn.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('is-scrolled', open || scrollY > 8);
+    if (lenis) open ? lenis.stop() : lenis.start();
+    else root.style.overflow = open ? 'hidden' : '';
   };
+  menuBtn.addEventListener('click', () => setMenu(!menuOpen));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen) setMenu(false); });
+  $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id !== '#top' && !$(id)) return;
+    e.preventDefault();
+    if (menuOpen) setMenu(false);
+    goTo(id);
+  }));
+  const links = $$('.nav-links a');
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    links.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  $$('main > section, footer').forEach(s => s.id && spy.observe(s));
 
-  const initSplits = () => {
-    $$('.split').forEach(el => {
-      splitEl.i = 0;
-      splitEl(el);
-    });
-  };
-
-  const initObserver = () => {
-    const isMobile = window.innerWidth <= 768;
-    const io = new IntersectionObserver(es => es.forEach(e => {
-      if (!e.isIntersecting) return;
-      e.target.classList.add('in');
-      io.unobserve(e.target);
-    }), {
-      threshold: isMobile ? 0.05 : 0.08,
-      rootMargin: isMobile ? '0px 0px -5% 0px' : '0px 0px -10% 0px'
-    });
-    $$('[data-rev], .split').forEach(el => io.observe(el));
-  };
-
-  const MARKS = [0, 8, 19, 29.5, 40];
-  const STATUS = ['SPARK', 'FLOW', 'BOSS', 'CLUTCH', 'WIN'];
-  const TOTAL_MIN = 40;
-  const EVALS = 214;
-  let tlRows = [], tlClock, tlDist, tlStatus, lastLit = -1;
-
-  const initTl = () => {
-    tlRows = $$('.tl-row');
-    tlClock  = document.getElementById('tlClock')  || { textContent: '' };
-    tlDist   = document.getElementById('tlDist')   || { textContent: '' };
-    tlStatus = document.getElementById('tlStatus');
-  };
-
-  const tlUpdate = p => {
-    const x = p * (MARKS.length - 1);
-    const i = Math.min(MARKS.length - 2, Math.floor(x));
-    const t = clamp(lerp(MARKS[i], MARKS[i + 1], x - i), 0, TOTAL_MIN);
-    const sec = Math.round(t * 60);
-    if (tlClock.textContent !== undefined) tlClock.textContent = String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
-    if (tlDist.textContent !== undefined) tlDist.textContent = String(Math.round(t / TOTAL_MIN * EVALS)).padStart(3, '0');
-    const lit = Math.min(4, Math.floor(p * 5));
-    if (lit !== lastLit) {
-      tlRows.forEach((r, idx) => {
-        r.classList.toggle('lit', idx <= lit);
-        r.classList.toggle('active', idx === lit);
-      });
-      if (tlStatus) tlStatus.textContent = STATUS[lit];
-      lastLit = lit;
-    }
-  };
-
-  let canvas, ctx, W = 0, H = 0, nodes = [], edges = [], route = [0, 3, 7, 12, 18, 25], segLens = [], routeTotal = 0, mapP = 0, mapOn = false;
-
-  const buildMap = () => {
-    const dpr = Math.min(2, devicePixelRatio || 1);
-    W = canvas.clientWidth;
-    H = canvas.clientHeight;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    nodes = [];
-    const cx = W * 0.5, cy = H * 0.44, R = Math.min(W, H) * 0.38;
-    for (let i = 0; i < 26; i++) {
-      const r = Math.sqrt(i / 26), a = i * 2.399;
-      nodes.push([cx + Math.cos(a) * r * R, cy + Math.sin(a) * r * R * 0.92]);
-    }
-    edges = [];
-    const th = R * 0.27;
-    for (let a = 0; a < 26; a++) {
-      for (let b = a + 1; b < 26; b++) {
-        const dx = nodes[a][0] - nodes[b][0], dy = nodes[a][1] - nodes[b][1];
-        if (Math.hypot(dx, dy) < th) edges.push([a, b]);
-      }
-    }
-    segLens = [];
-    routeTotal = 0;
-    for (let i = 0; i < route.length - 1; i++) {
-      const d = Math.hypot(nodes[route[i + 1]][0] - nodes[route[i]][0], nodes[route[i + 1]][1] - nodes[route[i]][1]);
-      segLens.push(d);
-      routeTotal += d;
-    }
-  };
-
-  const drawMap = () => {
-    if (!ctx) return;
-    ctx.clearRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(17,16,16,.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    edges.forEach(([a, b]) => {
-      ctx.moveTo(nodes[a][0], nodes[a][1]);
-      ctx.lineTo(nodes[b][0], nodes[b][1]);
-    });
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(17,16,16,.8)';
-    nodes.forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.arc(x, y, 2.4, 0, 7);
-      ctx.fill();
-    });
-    if (mapP <= 0) return;
-    let budget = mapP * routeTotal;
-    ctx.strokeStyle = '#DC201E';
-    ctx.lineWidth = 2.6;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(nodes[route[0]][0], nodes[route[0]][1]);
-    let head = nodes[route[0]];
-    for (let i = 0; i < route.length - 1 && budget > 0; i++) {
-      const a = nodes[route[i]], b = nodes[route[i + 1]];
-      const seg = Math.min(budget, segLens[i]);
-      const t = seg / segLens[i];
-      head = [lerp(a[0], b[0], t), lerp(a[1], b[1], t)];
-      ctx.lineTo(head[0], head[1]);
-      budget -= seg;
-    }
-    ctx.stroke();
-    const pulse = 3.6 + Math.sin(performance.now() / 240) * 1.4;
-    ctx.fillStyle = 'rgba(220,32,30,.16)';
-    ctx.beginPath();
-    ctx.arc(head[0], head[1], pulse * 3.4, 0, 7);
-    ctx.fill();
-    ctx.fillStyle = '#DC201E';
-    ctx.beginPath();
-    ctx.arc(head[0], head[1], pulse, 0, 7);
-    ctx.fill();
-  };
-
-  const stages = [];
-  const initStages = () => {
-    [['#stHero', null], ['#stWipe', null], ['#stTl', tlUpdate], ['#stMap', null]].forEach(([sel, fn]) => {
-      const el = $(sel);
-      if (el) stages.push({ el, fn });
-    });
-  };
-
-  let ticking = false;
-  const onScroll = () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      ticking = false;
-      const vh = innerHeight;
-      stages.forEach(s => {
-        const rect = s.el.getBoundingClientRect();
-        const total = s.el.offsetHeight - vh;
-        const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
-        if (s.el.id === 'stHero') heroP = p;
-        if (rect.bottom < -200 || rect.top > vh + 200) return;
-        s.el.style.setProperty('--p', p.toFixed(4));
-        if (s.fn) s.fn(p);
-        if (s.el.id === 'stMap') mapP = p;
-      });
-      const dh = document.documentElement.scrollHeight - vh;
-      document.documentElement.style.setProperty('--sp', dh > 0 ? (scrollY / dh).toFixed(4) : '0');
-      if (pageCounter && allSections.length) {
-        let curr = 0;
-        allSections.forEach((sec, i) => {
-          if (sec.getBoundingClientRect().top < vh * 0.55) curr = i;
-        });
-        pageCounter.textContent = String(curr + 1).padStart(2, '0') + ' / ' + String(allSections.length).padStart(2, '0');
-      }
-    });
-  };
-
-  const initScroll = () => {
-    allSections = $$('section');
-    pageCounter = $('#pageCounter');
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', () => { buildMap(); drawMap(); cacheWm(); onScroll(); });
-    new IntersectionObserver(es => es.forEach(e => { mapOn = e.isIntersecting; }), { rootMargin: '120px' })
-      .observe($('#stMap'));
-    const loop = () => {
-      if (!document.hidden) {
-        heroFrame();
-        if (mapOn && !reduced) drawMap();
-      }
-      requestAnimationFrame(loop);
+  /* ── reveals + counters ── */
+  const count = el => {
+    const n = Number(el.dataset.count), t0 = performance.now();
+    if (reduced) { el.textContent = n; return; }
+    const step = now => {
+      const p = clamp((now - t0) / 1500);
+      el.textContent = Math.round(n * easeOut(p));
+      if (p < 1) requestAnimationFrame(step);
     };
-    loop();
-    onScroll();
+    requestAnimationFrame(step);
   };
-
-  const clock = () => {
-    const el = $('#clock');
-    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const upd = () => { el.textContent = fmt.format(new Date()); };
-    setInterval(upd, 1000);
-    upd();
-  };
-
-  const forms = () => {
-    const main = $('#mainForm');
-    if (main) main.addEventListener('submit', e => {
-      e.preventDefault();
-      const [name, mail] = $$('input', main).map(i => i.value.trim());
-      const msg = $('textarea', main).value.trim();
-      location.href = `mailto:manavaghera@yahoo.com?subject=${encodeURIComponent('RUN REQUEST — ' + name)}&body=${encodeURIComponent(msg + '\n\n— ' + name + ' (' + mail + ')')}`;
-      toast('OPENING MAIL CLIENT — TRANSMITTING');
+  const io = new IntersectionObserver(es => {
+    let n = 0;
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.style.setProperty('--d', (n++ * .07) + 's');
+      e.target.classList.add('in');
+      $$('[data-count]', e.target).forEach(count);
+      if (e.target.matches('[data-decode]')) decode(e.target);
+      io.unobserve(e.target);
     });
-    const copy = $('#copyMail');
-    if (copy) copy.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText('manavaghera@yahoo.com'); toast('EMAIL COPIED — MANAVAGHERA@YAHOO.COM'); }
-      catch { toast('MANAVAGHERA@YAHOO.COM'); }
-    });
+  }, { rootMargin: '0px 0px -10% 0px' });
+
+  /* ── manifesto: decode, then attention arcs ── */
+  const attnBox = $('#attn');
+  let toks = [], attnReady = reduced;
+  const decode = el => {
+    const items = $$('.tok', el), orig = items.map(t => t.textContent);
+    const total = orig.reduce((a, s) => a + s.length, 0), glyphs = 'abcdefghijklmnopqrstuvwxyz';
+    if (reduced) return;
+    const t0 = performance.now(), dur = 1500, win = 12;
+    const step = now => {
+      const front = clamp((now - t0) / dur) * (total + win);
+      let k = 0;
+      items.forEach((t, i) => {
+        let out = '';
+        const start = k;
+        for (const ch of orig[i]) { const d = front - k++; out += d >= win || !/[a-z]/i.test(ch) ? ch : glyphs[(Math.random() * 26) | 0]; }
+        t.textContent = out;
+        t.style.opacity = front > start ? 1 : .12;
+      });
+      if (front < total + win) requestAnimationFrame(step);
+      else { items.forEach((t, i) => { t.textContent = orig[i]; t.style.opacity = ''; }); attnReady = true; }
+    };
+    requestAnimationFrame(step);
   };
 
-  addEventListener('DOMContentLoaded', () => {
-    initSplits();
-    initObserver();
-    initWordmark();
-    initHeroPointer();
-    initTl();
-    canvas = $('#routeCanvas');
-    ctx = canvas.getContext('2d');
-    buildMap();
-    initStages();
-    initScroll();
-    drawMap();
-    clock();
-    forms();
-    // $('#year').textContent = new Date().getFullYear();
+  if (attnBox) {
+    const svg = $('.attn-svg', attnBox), text = $('.attn-text', attnBox), NS = 'http://www.w3.org/2000/svg';
+    const words = text.textContent.trim().split(/\s+/);
+    text.textContent = '';
+    words.forEach((w, i) => {
+      const s = document.createElement('span');
+      s.className = 'tok';
+      s.textContent = w;
+      text.append(s);
+      if (i < words.length - 1) text.append(' ');
+      toks.push(s);
+    });
+    const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+    const GROUPS = [
+      ['read', 'scholars', 'retrieval', 'grounded', 'stays'],
+      ['reason', 'agents', 'recover', 'own', 'build'],
+      ['see', 'blinking', 'vision', 'offline', 'small', 'live', 'machines']
+    ];
+    const group = toks.map(t => GROUPS.findIndex(g => g.includes(norm(t.textContent))));
+    const hash = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); };
+    let user = false, cur = -1, visible = false;
+    const clear = () => { svg.innerHTML = ''; attnBox.classList.remove('is-on'); toks.forEach(t => t.classList.remove('q', 'k')); cur = -1; };
+    const show = i => {
+      if (!attnReady || i === cur || i < 0) return;
+      clear();
+      cur = i;
+      const scores = toks.map((t, j) => (j === i || norm(t.textContent).length < 2 ? -1e9
+        : (group[i] >= 0 && group[i] === group[j] ? 2.6 : 0) + hash(i, j) * 1.4 + .8 / (1 + Math.abs(i - j))));
+      const top = scores.map((s, j) => [s, j]).sort((a, b) => b[0] - a[0]).slice(0, 4);
+      const ex = top.map(([s]) => Math.exp(s / .7)), sum = ex.reduce((a, b) => a + b, 0);
+      const br = attnBox.getBoundingClientRect();
+      svg.setAttribute('viewBox', `0 0 ${br.width} ${br.height}`);
+      const anchor = el => { const r = el.getBoundingClientRect(); return [r.left - br.left + r.width / 2, r.top - br.top + r.height * .1]; };
+      const [ax, ay] = anchor(toks[i]);
+      attnBox.classList.add('is-on');
+      toks[i].classList.add('q');
+      top.forEach(([, j], n) => {
+        const w = ex[n] / sum, [bx, by] = anchor(toks[j]);
+        toks[j].classList.add('k');
+        const lift = Math.min(ay, by) - (26 + Math.abs(bx - ax) * .18 + Math.abs(by - ay) * .3);
+        const p = document.createElementNS(NS, 'path');
+        p.setAttribute('d', `M${ax},${ay} C${ax},${lift} ${bx},${lift} ${bx},${by}`);
+        p.style.strokeWidth = (1 + w * 4.5).toFixed(2);
+        p.style.opacity = (.3 + w * .7).toFixed(2);
+        svg.append(p);
+        const len = p.getTotalLength();
+        p.style.strokeDasharray = len;
+        p.style.strokeDashoffset = len;
+        p.getBoundingClientRect();
+        p.style.transition = `stroke-dashoffset .8s cubic-bezier(.22,1,.36,1) ${n * 70}ms`;
+        p.style.strokeDashoffset = 0;
+        const mid = p.getPointAtLength(len / 2);
+        const r = document.createElementNS(NS, 'rect'), t = document.createElementNS(NS, 'text');
+        r.setAttribute('x', mid.x - 18); r.setAttribute('y', mid.y - 9); r.setAttribute('width', 36); r.setAttribute('height', 17); r.setAttribute('rx', 8.5);
+        t.setAttribute('x', mid.x); t.setAttribute('y', mid.y + 3.5); t.setAttribute('text-anchor', 'middle');
+        t.textContent = w.toFixed(2);
+        svg.append(r, t);
+      });
+    };
+    attnBox.addEventListener('mouseover', e => { const t = e.target.closest('.tok'); if (t) { user = true; show(toks.indexOf(t)); } });
+    attnBox.addEventListener('mouseleave', clear);
+    attnBox.addEventListener('click', e => { const t = e.target.closest('.tok'); user = true; t ? show(toks.indexOf(t)) : clear(); });
+    addEventListener('resize', clear);
+    new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting; }), { threshold: .4 }).observe(attnBox);
+    const keys = toks.map((t, i) => (['read', 'reason', 'see'].includes(norm(t.textContent)) ? i : -1)).filter(i => i >= 0);
+    let k = 0;
+    setInterval(() => {
+      if (user || !visible || !attnReady || reduced) return;
+      cur = -1;
+      show(keys[k++ % keys.length]);
+    }, 2400);
+  }
+  $$('[data-reveal], [data-decode]').forEach(el => io.observe(el));
+  MA.observe = el => io.observe(el);
+
+  /* ── contact ── */
+  $('#copyMail').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(EMAIL); toast('Email copied'); }
+    catch (e) { toast(EMAIL); }
   });
+  /* catch "gamil.com"-style slips before a reply goes somewhere nobody reads */
+  const DOMAINS = ['gmail.com', 'yahoo.com', 'yahoo.co.in', 'outlook.com', 'hotmail.com', 'icloud.com', 'live.com', 'proton.me', 'protonmail.com', 'rediffmail.com'];
+  const lev = (a, b) => {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  };
+  MA.emailTypo = email => {
+    const [user, dom] = String(email).toLowerCase().split('@');
+    if (!user || !dom || DOMAINS.includes(dom)) return null;
+    const [best, dist] = DOMAINS.map(d => [d, lev(dom, d)]).sort((x, y) => x[1] - y[1])[0];
+    return dist <= 2 ? `${user}@${best}` : null;
+  };
+
+  /* the message goes straight to my inbox through /api/contact; copy + mail app are only a fallback */
+  const form = $('#promptForm'), nameIn = $('#promptName'), mailIn = $('#promptEmail'), textIn = $('#promptText');
+  const foot = form.querySelector('.prompt-foot span'), footText = foot.textContent;
+  let opened = Date.now(), sending = false, typoOk = '';
+  const hint = fix => {
+    foot.textContent = `Did you mean ${fix}? `;
+    const use = document.createElement('button');
+    use.type = 'button'; use.className = 'linkish'; use.textContent = 'use it';
+    use.addEventListener('click', () => { mailIn.value = fix; foot.textContent = footText; });
+    foot.append(use, ' · or Send again to keep yours');
+  };
+  MA.prefill = text => { if (!textIn.value.trim()) textIn.value = text; setTimeout(() => (nameIn.value ? textIn : nameIn).focus({ preventScroll: true }), 700); };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (sending) return;
+    const body = { name: nameIn.value.trim(), email: mailIn.value.trim(), message: textIn.value.trim(), website: $('#promptHp').value, t: Date.now() - opened };
+    if (body.name.length < 2) { toast('Add your name first'); nameIn.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(body.email)) { toast('Add your email so I can reply'); mailIn.focus(); return; }
+    if (body.message.length < 5) { toast('Write a message first'); textIn.focus(); return; }
+    const fix = MA.emailTypo(body.email);
+    if (fix && typoOk !== body.email) { typoOk = body.email; hint(fix); mailIn.focus(); return; }
+    foot.textContent = footText;
+    sending = true;
+    const flight = MA.flyPlane ? MA.flyPlane(textIn) : Promise.resolve();
+    let r = null, j = {};
+    try { r = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); j = await r.json().catch(() => ({})); } catch (x) { /* offline or no backend */ }
+    await flight;
+    sending = false;
+    if (r && r.ok) {
+      textIn.value = ''; opened = Date.now();
+      toast(`Sent ✓ — I'll reply to ${body.email}`);
+      if (MA.achieve) MA.achieve('pilot');
+    } else if (r && (r.status === 400 || r.status === 429)) toast(j.error || 'Please check the form');
+    else {
+      /* no backend reachable: keep the words safe on the clipboard, then try the mail app */
+      let copied = false;
+      try { await navigator.clipboard.writeText(`${body.message}\n\n— ${body.name} <${body.email}>`); copied = true; } catch (x) { /* clipboard blocked */ }
+      toast(copied ? `Couldn't send directly — your message is copied. Paste it into an email to ${EMAIL}` : `Couldn't send directly — please email ${EMAIL}`);
+      setTimeout(() => { location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Hello from ' + body.name)}&body=${encodeURIComponent(body.message)}`; }, 1400);
+    }
+  });
+  const clock = $('#clock');
+  const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+  const heroClock = $('#heroClock');
+  const tick = () => { clock.textContent = fmt.format(new Date()); if (heroClock) heroClock.textContent = clock.textContent; };
+  tick();
+  setInterval(tick, 15000);
+  $('#year').textContent = new Date().getFullYear();
+
+  /* ── loop ── */
+  const loop = now => {
+    if (lenis) lenis.raf(now);
+    if (!menuOpen) nav.classList.toggle('is-scrolled', scrollY > 8);
+    requestAnimationFrame(loop);
+  };
+  if (!reduced && typeof Lenis !== 'undefined') lenis = MA.lenis = new Lenis({ lerp: .1, smoothWheel: true });
+  requestAnimationFrame(loop);
+  let shown = false;
+  const ready = () => { if (shown) return; shown = true; requestAnimationFrame(() => root.classList.add('ready')); };
+  if (document.fonts) document.fonts.ready.then(ready);
+  setTimeout(ready, 600);
 })();
