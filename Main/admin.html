@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · Manav Aghera</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#031211">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23031211'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='17' fill='%2300AEBB'%3EMA%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/base.css?v=221">
+<link rel="stylesheet" href="css/admin.css?v=221">
+<script src="js/admin.js?v=221" defer></script>
+</head>
+<body>
+<main class="adm">
+  <header class="adm-top">
+    <a class="nav-logo" href="/"><i>MA</i>Manav Aghera</a>
+    <span class="mono">back office</span>
+    <button class="adm-out mono" id="admOut" type="button" hidden>sign out</button>
+  </header>
+
+  <p class="adm-note mono" id="admNote" hidden></p>
+
+  <section class="adm-login" id="admLogin" hidden aria-labelledby="admLoginH">
+    <h1 id="admLoginH">Sign <em>in</em></h1>
+    <form id="admForm">
+      <label class="mono">Admin ID<input name="id" autocomplete="username" maxlength="100" required></label>
+      <label class="mono">Password<input name="password" type="password" autocomplete="current-password" maxlength="200" required></label>
+      <button class="btn btn-primary" type="submit">Sign in →</button>
+      <p class="adm-err mono" id="admErr" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="adm-dash" id="admDash" hidden aria-label="Dashboard">
+    <h1>The back <em>office</em></h1>
+    <div class="adm-tabs mono" role="tablist">
+      <button type="button" role="tab" data-tab="pending" aria-selected="true">waiting <b>0</b></button>
+      <button type="button" role="tab" data-tab="published" aria-selected="false">published <b>0</b></button>
+      <button type="button" role="tab" data-tab="messages" aria-selected="false">messages <b>0</b></button>
+      <button type="button" role="tab" data-tab="guestbook" aria-selected="false">guestbook <b>0</b></button>
+      <button type="button" role="tab" data-tab="stats" aria-selected="false">stats <b>·</b></button>
+      <button type="button" class="adm-refresh" id="admRefresh" aria-label="Refresh">↻</button>
+    </div>
+    <ol class="adm-list" id="admList" aria-live="polite"></ol>
+  </section>
+</main>
+</body>
+</html>

@@ -1,1 +1,10 @@
 node_modules/
+.env
+.env.*
+!.env.example
+.vercel
+
+# the owner's original résumé (has the phone number); the site serves Main/Manav_Aghera_Resume.pdf
+/Manav_Aghera_Resume.pdf
+# /jury evidence (screenshots and score cards)
+.jury/
