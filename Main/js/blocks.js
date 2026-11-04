@@ -15,12 +15,12 @@
   const nowGrid = $('nowGrid');
   if (nowGrid) {
     const NOW = [
-      { k: 'Building', t: 'CHRONUS', d: 'Phase 02 — encrypted vector search, on top of a deterministic, fully local RAG core.', cls: 'wide lead', href: '#research' },
-      { k: 'Researching', t: 'Memory & agents', d: 'Long-term memory architectures, neural networks, and where agentic systems go next.' },
+      { k: 'Building', t: 'CHRONUS', d: 'Phase 2: encrypted search, built on a document-search core that runs fully on your own machine.', cls: 'wide lead', href: '#research' },
+      { k: 'Researching', t: 'Memory & agents', d: 'How AI can remember things over time, and where AI agents are heading next.' },
       { k: 'Local time', live: 'time' },
       { k: 'Last commit', live: 'commit', cls: 'wide', href: '#commits' },
-      { k: 'Burning today', live: 'tokens', href: '#tokens' },
-      { k: 'Open to', t: 'AI/ML roles', d: "RAG, agents, applied ML. Let's talk.", href: '#contact' },
+      { k: 'Just finished', t: 'Stanford CS230', d: "Deep learning, plus DeepLearning.AI's course on fine-tuning LLMs with GRPO.", href: '#awards' },
+      { k: 'Open to', t: 'ML & AI internships', d: "Engineer internships or trainee roles: applied ML, RAG, agents. Let's talk.", href: '#contact' },
       { k: 'Studying', t: 'B.Tech CS · final year', d: 'Parul University, Vadodara — graduating 2027.', cls: 'wide' },
       { k: 'Certified', t: 'MCP & RAG', d: 'Anthropic Academy — both courses, hands-on.', cls: 'wide', href: '#awards' }
     ];
@@ -47,13 +47,8 @@
     const time = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     const hourIST = () => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false }).format(new Date())) % 24;
     const mood = h => (h < 7 ? 'probably asleep — or training a model' : h < 10 ? 'coffee and the inbox' : h < 19 ? 'deep work hours' : 'building side projects');
-    const midnightIST = () => { const now = new Date(), ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })); return (ist.getHours() * 3600 + ist.getMinutes() * 60 + ist.getSeconds()); };
     const tickNow = () => {
       if (live.time) { live.time.big.textContent = time.format(new Date()); live.time.sub.textContent = `Vadodara, IST · ${mood(hourIST())}`; }
-      if (live.tokens && MA.tokRate) {
-        live.tokens.big.textContent = Math.round(midnightIST() * MA.tokRate).toLocaleString('en-US');
-        live.tokens.sub.textContent = 'tokens since midnight IST (estimate)';
-      }
     };
     tickNow();
     setInterval(tickNow, 1000);
@@ -79,11 +74,11 @@
   const svcList = $('svcList');
   if (svcList) {
     const SVC = [
-      { t: 'RAG & knowledge assistants', d: "Search and chat over your own documents that stays grounded — it cites sources and says \"I don't know\" instead of inventing.", get: ['Ingestion, chunking & embeddings', 'Vector store + retrieval tuning', 'Faithfulness evaluation'], stack: 'LangChain · Sentence-BERT · ChromaDB · FastAPI', proof: 'Proof: CHRONUS' },
-      { t: 'AI agents & automation', d: 'Multi-step agent workflows that research, write, validate and recover from failures on their own.', get: ['LangGraph state machines', 'Tool calling with guardrails', 'Fallbacks & monitoring'], stack: 'LangGraph · Llama 3 · Ollama', proof: 'Proof: AutonomousContent — 78.7/100 avg.' },
-      { t: 'Computer vision & edge AI', d: 'Detection and classification models compressed to run offline on low-end phones or right in the browser.', get: ['Data + training pipeline', 'Quantisation to TFLite / ONNX', 'On-device or in-tab inference'], stack: 'YOLOv8 · TensorFlow Lite · ONNX Runtime', proof: 'Proof: Fasal AI · DermaLense.AI' },
-      { t: 'MCP servers & integrations', d: 'Connect LLMs to your real tools and data through Model Context Protocol servers.', get: ['Custom servers: tools, resources, prompts', 'Safe tool design', 'Client integration'], stack: 'MCP · Python · TypeScript', proof: 'Anthropic Academy certified' },
-      { t: 'Frontier R&D', d: 'Research-grade work on memory architectures, neural networks and advanced agentic systems — the open questions on the road to more general AI.', get: ['Literature-backed prototypes', 'Benchmarks & ablations', 'Write-ups you can build on'], stack: 'PyTorch · Qiskit · PennyLane', proof: 'See: the CHRONUS roadmap' }
+      { t: 'RAG & knowledge assistants', d: "A chat assistant that knows your documents inside out — and shows its sources. When it doesn't know, it says so instead of making things up.", get: ['Your documents prepared and indexed', 'Search tuned until answers are right', 'Accuracy tested before launch'], stack: 'LangChain · Sentence-BERT · ChromaDB · FastAPI', proof: 'Proof: CHRONUS' },
+      { t: 'AI agents & automation', d: 'AI agents that take a multi-step job off your plate — research, write, check, publish — and recover on their own when a step fails.', get: ['Agent workflows mapped to your process', 'Safe tool use with guardrails', 'Fallbacks and monitoring built in'], stack: 'LangGraph · Llama 3 · Ollama', proof: 'Proof: AutonomousContent — 78.7/100 avg.' },
+      { t: 'Computer vision & edge AI', d: 'Models that spot what matters in an image or video, shrunk to run offline on budget phones or straight in a browser.', get: ['Data collection and training', 'Compressed for phones and browsers', 'Runs on-device — no cloud bill'], stack: 'YOLOv8 · TensorFlow Lite · ONNX Runtime', proof: 'Proof: Fasal AI · DermaLense.AI' },
+      { t: 'MCP servers & integrations', d: 'Give your AI assistant real hands: connect it to your tools, files and data through MCP servers.', get: ['Custom servers for your tools', 'Safe, permissioned actions', 'Plugged into the assistant you use'], stack: 'MCP · Python · TypeScript', proof: 'Anthropic Academy certified' },
+      { t: 'Frontier R&D', d: 'Research-grade work on AI memory, neural networks and smarter agents — the open questions on the way to more general AI.', get: ['Prototypes backed by the papers', 'Benchmarks you can trust', 'Write-ups you can build on'], stack: 'PyTorch · Qiskit · PennyLane', proof: 'See: the CHRONUS roadmap' }
     ];
     const rows = SVC.map((s, i) => {
       const li = el('li', 'svc');

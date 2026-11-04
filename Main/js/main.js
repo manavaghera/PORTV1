@@ -18,6 +18,38 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
   const EMAIL = 'manavaghera@yahoo.com';
   const MA = window.MA = window.MA || {};
   let lenis = null;
+  const VER = ((document.currentScript && document.currentScript.src.match(/[?&]v=(\d+)/)) || [])[1]; // same cache-buster for the late scripts
+
+  /* ── first visit: a short loading screen per theme (html.booting is set in <head>, once per session).
+     It counts up while the page loads, ends after 1.7–4 s (or on any click/key), and everything that
+     animates on entry waits for MA.booted so it plays where you can see it. ── */
+  MA.booted = new Promise(done => {
+    const boot = $('#boot');
+    if (!root.classList.contains('booting') || !boot) { if (boot) boot.remove(); return done(); }
+    const small = matchMedia('(max-width:720px)').matches; // phones get a shorter intro
+    /* phones: the intro counts from the moment the page was opened and doesn't wait for the remaining scripts,
+       so it's gone as soon as this script runs and ~0.9 s have passed; wider screens wait for the full load */
+    const t0 = small ? 0 : performance.now(), MIN = small ? 900 : 1500, MAX = small ? 1800 : 3500, nums = $$('b', boot);
+    let loaded = small || document.readyState === 'complete', over = false;
+    if (!small) addEventListener('load', () => { loaded = true; }, { once: true });
+    const finish = () => {
+      if (over) return;
+      over = true;
+      nums.forEach(n => { n.textContent = '100'; });
+      boot.classList.add('out');
+      setTimeout(() => { root.classList.remove('booting'); boot.remove(); if (MA.lenis) MA.lenis.start(); done(); }, small ? 350 : 700);
+    };
+    const tick = () => {
+      if (over) return;
+      const el = performance.now() - t0;
+      nums.forEach(n => { n.textContent = String(Math.floor(Math.min(loaded ? 100 : 94, el / MIN * 100))); });
+      if ((loaded && el >= MIN) || el >= MAX) finish(); else requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    setTimeout(finish, MAX + 600); // background tabs pause animation frames
+    boot.addEventListener('click', finish);
+    addEventListener('keydown', finish, { once: true });
+  });
 
   let toastT;
   const toast = MA.toast = msg => {
@@ -44,6 +76,7 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
     menu.setAttribute('aria-hidden', String(!open));
     menuBtn.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('is-scrolled', open || scrollY > 8);
+    scrolled = null; // the scroll listener re-syncs the nav from here
     if (lenis) open ? lenis.stop() : lenis.start();
     else root.style.overflow = open ? 'hidden' : '';
   };
@@ -84,7 +117,7 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
       if (e.target.matches('[data-decode]')) decode(e.target);
       io.unobserve(e.target);
     });
-  }, { rootMargin: '0px 0px -10% 0px' });
+  }, { rootMargin: matchMedia('(max-width:720px)').matches ? '0px 0px 8% 0px' : '0px 0px -10% 0px' }); // phones: start a touch early so nothing pops in late
 
   /* ── manifesto: decode, then attention arcs ── */
   const attnBox = $('#attn');
@@ -124,9 +157,9 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
     });
     const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
     const GROUPS = [
-      ['read', 'scholars', 'retrieval', 'grounded', 'stays'],
-      ['reason', 'agents', 'recover', 'own', 'build'],
-      ['see', 'blinking', 'vision', 'offline', 'small', 'live', 'machines']
+      ['read', 'documents', 'answers', 'before', 'your'],
+      ['reason', 'task', 'careful', 'agent', 'through'],
+      ['see', 'world', 'phone', 'camera', 'offline', 'even']
     ];
     const group = toks.map(t => GROUPS.findIndex(g => g.includes(norm(t.textContent))));
     const hash = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); };
@@ -254,16 +287,37 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
   setInterval(tick, 15000);
   $('#year').textContent = new Date().getFullYear();
 
-  /* ── loop ── */
-  const loop = now => {
-    if (lenis) lenis.raf(now);
-    if (!menuOpen) nav.classList.toggle('is-scrolled', scrollY > 8);
-    requestAnimationFrame(loop);
-  };
-  if (!reduced && typeof Lenis !== 'undefined') lenis = MA.lenis = new Lenis({ lerp: .1, smoothWheel: true });
-  requestAnimationFrame(loop);
+  /* ── smooth wheel scrolling (mouse and trackpad only: phones keep their own native, smoother touch scrolling) ── */
+  const wheel = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if (!reduced && wheel) { // fetched only here, after the page, so phones never download it
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
+    s.async = true;
+    s.onload = () => {
+      if (typeof Lenis === 'undefined') return;
+      lenis = MA.lenis = new Lenis({ lerp: .1, smoothWheel: true });
+      if (root.classList.contains('booting')) lenis.stop();
+      const loop = now => { lenis.raf(now); requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    };
+    document.head.append(s);
+  }
+  let scrolled = null;
+  const navState = () => { const on = scrollY > 8; if (!menuOpen && on !== scrolled) { scrolled = on; nav.classList.toggle('is-scrolled', on); } };
+  addEventListener('scroll', navState, { passive: true });
+  navState();
+  /* the features further down the page load once the first screen is up, in this order (each waits for the one
+     before it), so the intro and hero don't compete with ~75 KB of scripts nobody can see yet */
+  const LATER = ['sims', 'net', 'github', 'breaker', 'lab', 'lab-nn', 'lab-gen', 'lab-cv', 'lab-digits', 'lab-words',
+    'companion', 'term', 'kind', 'guestbook', 'cases', 'chronus', 'playground', 'rag'];
+  const loadLater = () => LATER.forEach(n => {
+    const s = document.createElement('script');
+    s.src = `js/${n}.js${VER ? '?v=' + VER : ''}`;
+    s.async = false;
+    document.body.append(s);
+  });
+  MA.booted.then(() => (window.requestIdleCallback ? requestIdleCallback(loadLater, { timeout: 1200 }) : setTimeout(loadLater, 300)));
   let shown = false;
   const ready = () => { if (shown) return; shown = true; requestAnimationFrame(() => root.classList.add('ready')); };
-  if (document.fonts) document.fonts.ready.then(ready);
-  setTimeout(ready, 600);
+  MA.booted.then(() => { if (document.fonts) document.fonts.ready.then(ready); setTimeout(ready, 600); });
 })();

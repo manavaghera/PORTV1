@@ -14,10 +14,6 @@
     ['vision', 'Feature map', 'Draw something for the convolution', 'the lab'],
     ['reader', 'Legible', 'Get the digit reader to 90% sure', 'the lab'],
     ['analogy', 'King − man + woman', 'Do maths with words', 'the lab'],
-    ['jailbreak', 'Jailbreaker', 'Get Warden\'s first password', 'the arcade'],
-    ['redteam', 'Red team', 'Beat all five of Warden\'s levels', 'the arcade'],
-    ['factcheck', 'Fact-checker', 'Score 8 or more on Hallucination or fact?', 'the arcade'],
-    ['racer', 'Human baseline', 'Finish a race against the models', 'the arcade'],
     ['breaker', 'git reset --hard', 'Break 25 commit days in Commit Breaker', 'the commit log'],
     ['worlds', 'Two worlds', 'Switch between Lumora and Field', 'the theme switch'],
     ['hacker', 'sudo', 'Run sudo hire manav in the terminal', 'press ~'],
@@ -56,9 +52,9 @@
     box.append(head, ul);
     if (got.length === LIST.length) {
       const sec = el('div', 'ach-secret');
-      sec.append(el('b', null, 'You found everything.'), el('p', null, 'Most people never scroll past the hero. You trained a network, broke a bot and caught a butterfly. Write to me with the subject “16 of 16” and your email goes to the top of the pile — and I owe you a coffee.'));
+      sec.append(el('b', null, 'You found everything.'), el('p', null, `Most people never scroll past the hero. You trained a network, got your handwriting read and caught a butterfly. Write to me with the subject “${LIST.length} of ${LIST.length}” and your email goes to the top of the pile — and I owe you a coffee.`));
       const a = el('a', 'btn btn-primary', 'Claim it →');
-      a.href = 'mailto:manavaghera@yahoo.com?subject=' + encodeURIComponent('16 of 16');
+      a.href = 'mailto:manavaghera@yahoo.com?subject=' + encodeURIComponent(`${LIST.length} of ${LIST.length}`);
       sec.append(a);
       box.append(sec);
     }
@@ -76,6 +72,7 @@
   MA.achieve = id => {
     if (!IDS.includes(id) || got.includes(id)) return;
     got.push(id); save(); count();
+    if (MA.track) MA.track('ach', id);
     const [, name, how] = LIST.find(x => x[0] === id);
     toastBox.textContent = '';
     toastBox.append(el('i', null, '★'), el('span', 'mono', 'achievement unlocked'), el('b', null, name), el('small', null, how));

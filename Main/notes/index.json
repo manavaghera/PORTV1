@@ -1,0 +1,16 @@
+[
+  {
+    "slug": "why-my-chatbot-cites-its-sources",
+    "title": "Why my résumé chatbot shows its sources",
+    "date": "2026-10-17",
+    "summary": "The Ask me chat on this site answers only from my résumé — and tags every claim with the line it came from. Here's how, and why I think every assistant should work this way.",
+    "tags": ["RAG", "LLMs"]
+  },
+  {
+    "slug": "teaching-a-browser-to-read-handwriting",
+    "title": "The digit reader that read every 7 as a 3",
+    "date": "2026-10-16",
+    "summary": "A 98%-accurate model that failed on the first numbers I drew. The bug wasn't in the model — it was in the pixels I fed it.",
+    "tags": ["Deep learning", "Computer vision"]
+  }
+]

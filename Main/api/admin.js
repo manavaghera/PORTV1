@@ -2,14 +2,15 @@
  * /api/admin — the back office behind /admin.
  *  POST { action: 'login', id, password }  → session cookie (12 h); ADMIN_ID / ADMIN_PASSWORD env vars
  *  POST { action: 'logout' }
- *  GET                                     → pending + published kind words (with emails) and the message inbox
- *  POST { action: 'approve' | 'unpublish' | 'delete', id }
+ *  GET                                     → kind words (with emails), guestbook notes, the message inbox and visitor stats
+ *  POST { action: 'approve' | 'unpublish' | 'delete', id, wall? }   wall: 'kw' (kind words, default) or 'gb' (guestbook)
  *  POST { action: 'relation', id, relation }
  *  POST { action: 'deleteMessage', id }
  * Everything except login needs the session; changes also need the X-MA-Admin header (CSRF guard).
  */
 'use strict';
 const { env, httpError, send, handle, readJSON, redis, pipeline, parse, line, isId, limit, sameText, isHttps, newSession, sessionCookie, isAdmin, RELATIONS } = require('./_lib');
+const { stats } = require('./pulse');
 
 const load = async (zset, prefix, n = 200) => {
   const ids = await redis('ZREVRANGE', zset, 0, n - 1);
@@ -19,9 +20,9 @@ const load = async (zset, prefix, n = 200) => {
   if (gone.length) await redis('ZREM', zset, ...gone);
   return rows.filter(Boolean);
 };
-const item = async id => {
+const item = async (id, wall = 'kw') => {
   if (!isId(id)) throw httpError(400, 'Unknown item.');
-  const k = parse(await redis('GET', `kw:${id}`));
+  const k = parse(await redis('GET', `${wall}:${id}`));
   if (!k) throw httpError(404, 'That item no longer exists.');
   return k;
 };
@@ -29,8 +30,10 @@ const item = async id => {
 module.exports = handle(async (req, res) => {
   if (req.method === 'GET') {
     if (!isAdmin(req)) throw httpError(401, 'Please sign in.');
-    const [pending, published, messages] = await Promise.all([load('kw:pending', 'kw'), load('kw:published', 'kw'), load('msg:inbox', 'msg')]);
-    return send(res, 200, { pending, published, messages, relations: RELATIONS });
+    const [pending, published, messages, guestWaiting, guestLive, numbers] = await Promise.all([
+      load('kw:pending', 'kw'), load('kw:published', 'kw'), load('msg:inbox', 'msg'), load('gb:pending', 'gb'), load('gb:published', 'gb'), stats()
+    ]);
+    return send(res, 200, { pending, published, messages, guestbook: [...guestWaiting, ...guestLive], stats: numbers, relations: RELATIONS });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); throw httpError(405, 'Method not allowed.'); }
   const b = await readJSON(req);
@@ -51,10 +54,11 @@ module.exports = handle(async (req, res) => {
   if (!isAdmin(req)) throw httpError(401, 'Please sign in.');
   if (req.headers['x-ma-admin'] !== '1') throw httpError(403, 'Missing admin header.');
 
+  const wall = b.wall === 'gb' ? 'gb' : 'kw';
   if (action === 'approve' || action === 'unpublish') {
-    const k = await item(b.id), on = action === 'approve';
+    const k = await item(b.id, wall), on = action === 'approve';
     k.status = on ? 'published' : 'pending';
-    await pipeline([['SET', `kw:${k.id}`, JSON.stringify(k)], ['ZREM', on ? 'kw:pending' : 'kw:published', k.id], ['ZADD', on ? 'kw:published' : 'kw:pending', k.at, k.id]]);
+    await pipeline([['SET', `${wall}:${k.id}`, JSON.stringify(k)], ['ZREM', `${wall}:${on ? 'pending' : 'published'}`, k.id], ['ZADD', `${wall}:${on ? 'published' : 'pending'}`, k.at, k.id]]);
     return send(res, 200, { ok: true });
   }
   if (action === 'relation') {
@@ -66,7 +70,7 @@ module.exports = handle(async (req, res) => {
   }
   if (action === 'delete') {
     if (!isId(b.id)) throw httpError(400, 'Unknown item.');
-    await pipeline([['DEL', `kw:${b.id}`], ['ZREM', 'kw:pending', b.id], ['ZREM', 'kw:published', b.id]]);
+    await pipeline([['DEL', `${wall}:${b.id}`], ['ZREM', `${wall}:pending`, b.id], ['ZREM', `${wall}:published`, b.id]]);
     return send(res, 200, { ok: true });
   }
   if (action === 'deleteMessage') {

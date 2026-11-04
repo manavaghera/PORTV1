@@ -79,6 +79,7 @@
 /* handwriting */
 .dg-stage canvas{display:block;width:100%;aspect-ratio:1;cursor:crosshair;touch-action:none}
 .dg-stage .lab-hud button{height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--line-2);color:var(--text)}
+.dg-btns{display:inline-flex;gap:6px}
 .dg-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end}
 .dg-guess,.dg-seen{display:grid;gap:4px;font-size:11.5px;color:var(--text-3)}
 .dg-guess b{font:400 clamp(72px,8vw,112px)/.9 var(--serif);color:var(--accent)}

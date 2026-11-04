@@ -10,7 +10,7 @@
   const MA = window.MA = window.MA || {};
   const hero = document.getElementById('top');
   if (!hero || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const HOVER = '.btn, .now-card, .svc-head, .award, .lab-tabs [role="tab"], .soc, .repo-list a, .gh-stats > div, .lab-stage, .heat-card, .qcard, .nav-cta';
+  const HOVER = '.btn, .now-card, .svc-head, .plaque, .certs li, .lab-tabs [role="tab"], .soc, .repo-list a, .gh-stats > div, .lab-stage, .heat-card, .qcard, .nav-cta';
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
   let bf = null, wl = null, wr = null, active = false, T = 0, prev = performance.now();
@@ -68,8 +68,7 @@
 
   const render = wing => {
     bf.style.transform = `translate3d(${B.x.toFixed(1)}px,${B.y.toFixed(1)}px,0) rotate(${B.h.toFixed(3)}rad)`;
-    const t = `scale(${wing.toFixed(3)} 1)`;
-    wl.setAttribute('transform', t); wr.setAttribute('transform', t);
+    wl.style.transform = wr.style.transform = `scaleX(${wing.toFixed(3)})`;
   };
   const tick = now => {
     requestAnimationFrame(tick);

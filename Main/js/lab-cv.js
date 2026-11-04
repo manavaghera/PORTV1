@@ -107,7 +107,7 @@
   };
   const load = name => {
     const c = document.createElement('canvas'); c.width = c.height = S;
-    const g = c.getContext('2d');
+    const g = c.getContext('2d', { willReadFrequently: true });
     g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
     if (SAMPLES[name]) SAMPLES[name](g);
     const d = g.getImageData(0, 0, S, S).data;
@@ -163,5 +163,7 @@
   };
   readColours();
   addEventListener('themechange', () => { readColours(); run(); });
-  (document.fonts ? document.fonts.load('400 92px "DM Serif Display"').catch(() => {}) : Promise.resolve()).then(() => load('eye'));
+  /* the first render waits until the lab is near — no point paying for it on page load */
+  const first = () => (document.fonts ? document.fonts.load('400 92px "DM Serif Display"').catch(() => {}) : Promise.resolve()).then(() => load('eye'));
+  new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { o.disconnect(); first(); } }, { rootMargin: '800px 0px' }).observe(document.getElementById('lab') || panel);
 })();

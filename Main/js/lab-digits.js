@@ -92,7 +92,14 @@
   cv.addEventListener('pointerdown', e => { down = true; last = null; cv.setPointerCapture(e.pointerId); load(); stroke(at(e)); });
   cv.addEventListener('pointermove', e => { if (down) stroke(at(e)); });
   ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => { down = false; last = null; }));
-  panel.addEventListener('click', e => { if (e.target.closest('[data-dg="clear"]')) clear(); });
+  /* no pointer? a typed digit, drawn into both canvases, gets read the same way */
+  const sample = () => {
+    clear(); load();
+    const d = String(Math.floor(Math.random() * 10)), font = `600 ${S * .72}px "Space Grotesk", system-ui, sans-serif`;
+    [[ctx, `rgb(${C.paper})`], [ictx, '#fff']].forEach(([g, col]) => { g.font = font; g.fillStyle = col; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(d, S / 2, S * .54); });
+    run();
+  };
+  panel.addEventListener('click', e => { if (e.target.closest('[data-dg="clear"]')) clear(); else if (e.target.closest('[data-dg="sample"]')) sample(); });
   addEventListener('labtab', e => { if (e.detail === 'lab-dg') load(); });
   addEventListener('themechange', () => { readColours(); clear(); });
   readColours(); clear();

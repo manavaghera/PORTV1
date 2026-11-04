@@ -88,39 +88,6 @@
 .lang-key li{display:inline-flex;align-items:center;gap:6px}
 .lang-key i{width:8px;height:8px;border-radius:50%;background:var(--c)}
 
-/* ── token burn ── */
-.life{position:relative;margin-top:56px;padding:clamp(24px,3vw,40px);border-radius:28px;border:1px solid var(--line);overflow:hidden;
-  background:radial-gradient(60% 120% at 100% 0%,color-mix(in srgb,var(--k2) 18%,transparent),transparent 70%),radial-gradient(50% 120% at 0% 100%,color-mix(in srgb,var(--k4) 12%,transparent),transparent 70%),var(--surface)}
-.life-k{display:inline-flex;align-items:center;gap:10px;color:var(--text-2)}
-.life-k .live{display:inline-flex;align-items:center;gap:6px;margin-left:6px;padding:2px 8px;border-radius:999px;border:1px solid var(--line-2);color:var(--k4);font-size:11px}
-.life-k .live::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--k4);animation:blink 1.4s steps(1) infinite}
-.life-num{display:block;margin-top:14px;font:600 clamp(44px,8.2vw,132px)/.95 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap;
-  background:var(--grad-hot);-webkit-background-clip:text;background-clip:text;color:transparent}
-.life-tick{position:absolute;right:clamp(24px,3vw,40px);top:clamp(24px,3vw,40px);font:500 14px var(--mono);color:var(--k4);opacity:0}
-.life-tick.go{animation:tickUp 1.6s var(--ease)}
-@keyframes tickUp{0%{opacity:0;transform:translateY(10px)}15%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
-.life-note{margin-top:14px;max-width:62ch;font-size:15px;color:var(--text-3)}
-.burn{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:12px;margin-top:12px}
-.burn-meter{position:relative;display:flex;flex-direction:column;padding:10px 28px;border-radius:24px;border:1px solid var(--line);background:var(--surface)}
-.burn-stats{display:grid}
-.burn-stats>div{display:grid;gap:4px;padding:18px 0;border-top:1px solid var(--line)}
-.burn-stats>div:first-child{border-top:0}
-.burn-stats dt{font:500 clamp(26px,2.4vw,34px) var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.burn-stats dd{font-size:14px;color:var(--text-2)}
-.furnace{position:relative;display:flex;flex-direction:column;min-height:540px;border-radius:24px;border:1px solid var(--line);overflow:hidden;
-  background:radial-gradient(90% 60% at 50% 110%,color-mix(in srgb,var(--k3) 40%,transparent),color-mix(in srgb,var(--k2) 22%,transparent) 45%,transparent 75%),var(--c0)}
-.furnace canvas{position:absolute;inset:0;width:100%;height:100%}
-.feed{position:relative;z-index:2;margin-top:auto;display:grid;gap:10px;padding:18px;background:linear-gradient(0deg,color-mix(in srgb,var(--c0) 92%,transparent),transparent)}
-.feed label{color:var(--text-3)}
-.feed-row{display:flex;gap:8px;padding:6px 6px 6px 16px;border-radius:999px;border:1px solid var(--line-2);background:color-mix(in srgb,var(--c0) 80%,transparent);transition:border-color .3s,box-shadow .3s}
-.feed-row:focus-within{border-color:var(--k4);box-shadow:0 0 0 5px color-mix(in srgb,var(--k4) 14%,transparent)}
-.feed-row input{flex:1;min-width:0;font-size:15px}
-.feed-row input::placeholder{color:var(--text-3)}
-.feed-row .btn{height:40px;padding:0 16px;font-size:14px}
-.chips{display:flex;flex-wrap:wrap;gap:3px;min-height:24px;font:12.5px var(--mono)}
-.chips span{padding:2px 4px;border-radius:5px;white-space:pre;color:var(--c0);background:var(--c)}
-.chips em{font-style:normal;align-self:center;margin-left:8px;color:var(--text-3)}
-
 /* ── dock: lifetime token meter ── */
 .dock{position:fixed;left:16px;bottom:16px;z-index:45;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;border:1px solid var(--line-2);
   background:color-mix(in srgb,var(--c0) 72%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
@@ -131,6 +98,8 @@
 .dock-burn b{font-weight:500;color:var(--text)}
 .flame{width:12px;height:15px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:linear-gradient(0deg,var(--k2),var(--k3) 40%,var(--k4) 75%,var(--k5));box-shadow:0 0 12px var(--k3);animation:flick 1.4s ease-in-out infinite}
 .flame.hot{animation-duration:.4s}
+.dock .flame{animation-play-state:paused}
+.dock .flame.hot{animation-play-state:running}
 @keyframes flick{0%,100%{transform:scale(1,1) rotate(-3deg)}35%{transform:scale(.92,1.08) rotate(3deg)}70%{transform:scale(1.04,.94) rotate(-1deg)}}
 
 /* ── command palette ── */
@@ -158,9 +127,8 @@
 .confetti{position:fixed;inset:0;z-index:90;pointer-events:none;width:100%;height:100%}
 
 @media (max-width:980px){
-  .gh-grid,.burn{grid-template-columns:1fr}
+  .gh-grid{grid-template-columns:1fr}
   .gh-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .furnace{min-height:460px}
 }
 @media (max-width:600px){
   .gh-stats>div{padding:16px}
@@ -169,7 +137,6 @@
   .term-log{font-size:12px;padding:10px 8px 14px}
   .term-log li{grid-template-columns:auto minmax(0,1fr);gap:10px}
   .term-log time{display:none}
-  .burn-meter{padding:6px 22px}
   .dock{left:10px;bottom:10px}
   .cmdk{padding-top:10vh}
 }
@@ -183,15 +150,18 @@
 .pal button[aria-pressed="true"]{background:var(--surface-2);color:var(--text)}
 .pal i{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px var(--line-2)}
 .pal [data-pal="lumora"] i{background:conic-gradient(#031211 0 33%,#E8E4D3 0 66%,#00AEBB 0)}
-.pal [data-pal="field"] i{background:conic-gradient(#090907 0 33%,#6C5636 0 66%,#B99D73 0)}
+.pal [data-pal="field"] i{background:conic-gradient(#060404 0 33%,#4A1F1A 0 66%,#C0302A 0)}
 .pal b{font-weight:500}
-@media (max-width:720px){.pal{right:10px;bottom:62px;padding:4px}.pal span,.pal b{display:none}.pal button{padding:0 9px}}
+.pal.pal-menu{position:static;align-self:flex-start;margin:22px 0 14px;font-size:12.5px;backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}
+.pal.pal-menu button{height:36px;padding:0 14px 0 10px}
+@media (min-width:961px){.pal.pal-menu{display:none}}
+@media (max-width:720px){.pal:not(.pal-menu){display:none}}
 
 /* ── palette curtain: closes on click, reloads, then opens again in the other world ── */
 .curtain{position:fixed;inset:0;z-index:300;display:grid;place-items:center;pointer-events:none;clip-path:circle(0 at var(--x,50%) var(--y,50%));transition:clip-path .8s cubic-bezier(.7,0,.3,1)}
 .curtain.go{clip-path:circle(150% at var(--x,50%) var(--y,50%))}
 .curtain[data-to="lumora"]{background:#031211;color:#00AEBB}
-.curtain[data-to="field"]{background:#090907;color:#B99D73}
+.curtain[data-to="field"]{background:#060404;color:#C0302A}
 .curtain span,html.pal-in body::before{font:italic 400 clamp(64px,12vw,200px)/1 var(--serif);letter-spacing:-.01em}
 html.pal-in body::before{content:'Lumora';position:fixed;inset:0;z-index:300;display:grid;place-items:center;pointer-events:none;background:var(--c0);color:var(--k3);
   clip-path:circle(150% at 50% 50%);animation:curtainIn .9s cubic-bezier(.7,0,.3,1) .35s forwards}

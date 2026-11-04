@@ -17,7 +17,7 @@
   const fades = [...pin.querySelectorAll('.hero-k, .hero-role, .hero-lead, .hero-actions, .hero-social, .hero-foot')];
 
   /* once the entrance has played, scroll owns these elements (no CSS transitions in the way) */
-  setTimeout(() => pin.querySelectorAll('[data-in]').forEach(el => el.removeAttribute('data-in')), 2600);
+  (MA.booted || Promise.resolve()).then(() => setTimeout(() => pin.querySelectorAll('[data-in]').forEach(el => el.removeAttribute('data-in')), 2600));
 
   /* ── statement words ── */
   const words = statement ? [...statement.childNodes].flatMap(n => (n.textContent.trim() ? n.textContent.trim().split(/\s+/) : []).map(w => {
@@ -59,16 +59,29 @@
     lastP = -1;
   };
 
-  let lastP = -1, isPinned = true;
+  let lastP = -1, isPinned = true, flat = false;
+  let heroNear = true; // no layout reads at all once the hero is off screen
+  new IntersectionObserver(es => { heroNear = es[0].isIntersecting; }, { rootMargin: '100px 0px' }).observe(hero);
   const frame = () => {
     requestAnimationFrame(frame);
+    if (!heroNear) return;
     const r = hero.getBoundingClientRect();
     const pinned = isPinned;
     const p = clamp(-r.top / Math.max(1, hero.offsetHeight - innerHeight));
     MA.heroP = pinned ? p : clamp(-r.top / Math.max(1, hero.offsetHeight)) * .5;
     if (Math.abs(p - lastP) < .0003 || r.bottom < 0) return;
     lastP = p;
-    const q = pinned ? p : MA.heroP;
+    if (!pinned) { // phones: the hero scrolls normally and its text stays put; clear any leftover styles once
+      if (!flat) {
+        flat = true;
+        letters.forEach(l => { if (l.set) { l.el.style.transform = l.el.style.filter = l.el.style.opacity = ''; l.set = false; } });
+        fades.forEach(el => { el.style.opacity = el.style.transform = el.style.visibility = ''; });
+        name.querySelectorAll('.garden').forEach(g => { g.style.opacity = ''; });
+      }
+      return;
+    }
+    flat = false;
+    const q = p;
 
     /* name flies apart */
     const W = innerWidth;

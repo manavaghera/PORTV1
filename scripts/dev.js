@@ -8,12 +8,13 @@
 'use strict';
 const http = require('http');
 const fs = require('fs');
+const zlib = require('zlib');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', 'Main');
 const argPort = process.argv.indexOf('--port');
 const PORT = +(argPort > -1 && process.argv[argPort + 1]) || +process.env.PORT || 5518;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.pdf': 'application/pdf', '.mp4': 'video/mp4', '.ico': 'image/x-icon' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.pdf': 'application/pdf', '.md': 'text/markdown; charset=utf-8', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8', '.mp4': 'video/mp4', '.ico': 'image/x-icon' };
 
 const envFile = path.resolve(__dirname, '..', '.env.local');
 if (fs.existsSync(envFile)) {
@@ -25,7 +26,7 @@ if (fs.existsSync(envFile)) {
 
 /* ── a tiny Upstash-REST stand-in: just the commands the API uses ── */
 const mock = process.argv.includes('--mock-redis');
-const kv = new Map(), zs = new Map(), ttl = new Map();
+const kv = new Map(), zs = new Map(), ttl = new Map(), hs = new Map(), hll = new Map();
 const alive = k => { if (ttl.has(k) && ttl.get(k) < Date.now()) { kv.delete(k); ttl.delete(k); } return kv.has(k); };
 const zset = k => zs.get(k) || zs.set(k, new Map()).get(k);
 const sorted = k => [...zset(k)].sort((a, b) => a[1] - b[1]).map(e => e[0]);
@@ -43,6 +44,16 @@ const run = ([cmd, ...a]) => {
     case 'ZCARD': return zset(a[0]).size;
     case 'ZREVRANGE': return range(sorted(a[0]).reverse(), a[1], a[2]);
     case 'ZREMRANGEBYRANK': { const gone = range(sorted(a[0]), a[1], a[2]); gone.forEach(m => zset(a[0]).delete(m)); return gone.length; }
+    case 'ZREMRANGEBYSCORE': case 'ZCOUNT': {
+      const lo = a[1] === '-inf' ? -Infinity : +a[1], hi = a[2] === '+inf' ? Infinity : +a[2];
+      const hit = [...zset(a[0])].filter(([, s]) => s >= lo && s <= hi).map(e => e[0]);
+      if (String(cmd).toUpperCase() === 'ZREMRANGEBYSCORE') hit.forEach(m => zset(a[0]).delete(m));
+      return hit.length;
+    }
+    case 'HINCRBY': { const h = hs.get(a[0]) || hs.set(a[0], new Map()).get(a[0]); const v = (h.get(a[1]) || 0) + +a[2]; h.set(a[1], v); return v; }
+    case 'HGETALL': return [...(hs.get(a[0]) || [])].flatMap(([f, v]) => [f, String(v)]);
+    case 'PFADD': { const s = hll.get(a[0]) || hll.set(a[0], new Set()).get(a[0]); const n = s.size; a.slice(1).forEach(x => s.add(x)); return s.size > n ? 1 : 0; }
+    case 'PFCOUNT': return (hll.get(a[0]) || new Set()).size;
     default: throw new Error('mock redis: unsupported ' + cmd);
   }
 };
@@ -76,7 +87,7 @@ http.createServer(async (req, res) => {
     if (p.endsWith('/')) p += 'index.html';
     if (!path.extname(p) && fs.existsSync(path.join(ROOT, p + '.html'))) p += '.html'; // cleanUrls
     const file = path.resolve(ROOT, '.' + p), parts = path.relative(ROOT, file).split(path.sep);
-    const hidden = !file.startsWith(ROOT + path.sep) || parts[0] === 'api' || parts.some(s => s.startsWith('.'));
+    const hidden = !file.startsWith(ROOT + path.sep) || parts[0] === 'api' || parts[0] === 'node_modules' || parts.some(s => s.startsWith('.'));
     if (hidden || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -84,6 +95,12 @@ http.createServer(async (req, res) => {
     }
     res.setHeader('Content-Type', TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream');
     res.setHeader('Cache-Control', 'no-cache'); // locally, always fresh (Vercel caches /js, /css, /data for a year)
+    /* compress text like Vercel does, so local speed tests are realistic */
+    if (/^(text\/|application\/json|image\/svg)/.test(res.getHeader('Content-Type')) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
+      res.setHeader('Content-Encoding', 'gzip');
+      res.setHeader('Vary', 'Accept-Encoding');
+      return fs.createReadStream(file).pipe(zlib.createGzip()).pipe(res);
+    }
     fs.createReadStream(file).pipe(res);
   } catch (e) {
     console.error(e);

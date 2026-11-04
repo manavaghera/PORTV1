@@ -1,26 +1,31 @@
-/* ── themes: Lumora — ink black, warm ivory, electric teal (default) — and Field — charcoal, earth brown,
-   burnt amber (data-palette="field"). Each palette has a dark and a light face; --art-* colour the hero print ── */
+/* ── fonts: self-hosted Latin subsets (SIL Open Font License) — no third-party requests ── */
+@font-face{font-family:'DM Serif Display';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/dm-serif-display.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'DM Serif Display';font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/dm-serif-display-italic.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:300 700;font-display:swap;src:url(/fonts/space-grotesk.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/jetbrains-mono.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+/* ── themes: Lumora — ink black, warm ivory, electric teal (default) — and Field, the dark world — near-black,
+   blood red, bone (data-palette="field"). Each palette has a dark and a light face; --art-* colour the hero art ── */
 :root{
   --d0:#031211;--d1:#061A19;--dk1:#0E2B29;--dk2:#2E5A57;--dk3:#00AEBB;--dk4:#8FE3E8;--dk5:#E8E4D3;
-  --dacc:#00AEBB;--dacc-hi:#2CC5D0;--dgrad:linear-gradient(100deg,#00AEBB 0%,#7FD8DC 45%,#E8E4D3 100%);--dtx:232,228,211;
+  --dacc:#00AEBB;--dacc-hi:#2CC5D0;--don:#031211;--dgrad:linear-gradient(100deg,#00AEBB 0%,#7FD8DC 45%,#E8E4D3 100%);--dtx:232,228,211;
   --l0:#E8E4D3;--l1:#DEDAC6;--lk1:#CFCAB4;--lk2:#7E9590;--lk3:#00808A;--lk4:#0B4448;--lk5:#031211;
   --lacc:#00808A;--lacc-hi:#006B74;--lgrad:linear-gradient(100deg,#00AEBB 0%,#00808A 45%,#031211 100%);--ltx:3,18,17;
   --art-paper:#E8E4D3;--art-hue:#00AEBB;--art-sun:#00AEBB;
 }
 [data-palette="field"]{
-  --d0:#090907;--d1:#100F0C;--dk1:#1E1B15;--dk2:#6C5636;--dk3:#B99D73;--dk4:#DCC6A0;--dk5:#EDE6D8;
-  --dacc:#B99D73;--dacc-hi:#CDB48C;--dgrad:linear-gradient(100deg,#6C5636 0%,#B99D73 45%,#EDE2CB 100%);--dtx:236,230,216;
-  --l0:#EDE6D8;--l1:#E3DBCA;--lk1:#D5CBB6;--lk2:#9A8462;--lk3:#6C5636;--lk4:#3A2E1D;--lk5:#090907;
-  --lacc:#6C5636;--lacc-hi:#57442A;--lgrad:linear-gradient(100deg,#B99D73 0%,#6C5636 50%,#090907 100%);--ltx:9,9,7;
-  --art-paper:#E4D6BC;--art-hue:#B99D73;--art-sun:#D2602A;
+  --d0:#060404;--d1:#0C0807;--dk1:#1B100E;--dk2:#4A1F1A;--dk3:#C0302A;--dk4:#E58A73;--dk5:#EAE0D2;
+  --dacc:#A3241B;--dacc-hi:#C42E22;--don:#F2E8DB;--dgrad:linear-gradient(100deg,#6A1912 0%,#C0302A 45%,#ECCDBB 100%);--dtx:234,224,210;
+  --l0:#ECE4D6;--l1:#E2D8C7;--lk1:#D4C8B3;--lk2:#9C6A5C;--lk3:#8E1B12;--lk4:#4A100B;--lk5:#0C0807;
+  --lacc:#8E1B12;--lacc-hi:#701410;--lgrad:linear-gradient(100deg,#C0302A 0%,#8E1B12 50%,#0C0807 100%);--ltx:12,8,7;
+  --art-paper:#D9CEBE;--art-hue:#8E1B12;--art-sun:#C23A2B;
 }
 /* dark — also re-applied to the hero and the "screens", which stay dark in either theme */
-:root,[data-theme="light"] :is(.hero,.viewer-frame,.net-box,.term,.furnace,.award,.rag-box),[data-theme="light"] .nav:not(.is-scrolled){
+:root,[data-theme="light"] :is(.hero,.viewer-frame,.net-box,.term,.rag-box),[data-theme="light"] .nav:not(.is-scrolled){
   --c0:var(--d0);--c1:var(--d1);--k1:var(--dk1);--k2:var(--dk2);--k3:var(--dk3);--k4:var(--dk4);--k5:var(--dk5);
-  --accent:var(--dacc);--on-accent:var(--d0);--accent-hi:var(--dacc-hi);--grad:var(--dgrad);
-  --text:rgb(var(--dtx));--text-2:rgba(var(--dtx),.66);--text-3:rgba(var(--dtx),.42);--line:rgba(var(--dtx),.1);--line-2:rgba(var(--dtx),.18);--surface:rgba(var(--dtx),.035);--surface-2:rgba(var(--dtx),.065);
+  --accent:var(--dacc);--on-accent:var(--don);--accent-hi:var(--dacc-hi);--grad:var(--dgrad);
+  --text:rgb(var(--dtx));--text-2:rgba(var(--dtx),.66);--text-3:rgba(var(--dtx),.54);--line:rgba(var(--dtx),.1);--line-2:rgba(var(--dtx),.18);--surface:rgba(var(--dtx),.035);--surface-2:rgba(var(--dtx),.065);
 }
-[data-theme="light"] :is(.hero,.viewer-frame,.net-box,.term,.furnace,.award,.rag-box),[data-theme="light"] .nav:not(.is-scrolled){color:var(--text)}
+[data-theme="light"] :is(.hero,.viewer-frame,.net-box,.term,.rag-box),[data-theme="light"] .nav:not(.is-scrolled){color:var(--text)}
 :root{
   --grad-hot:var(--grad);
   --display:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;
@@ -35,7 +40,7 @@
 [data-theme="light"]{
   --c0:var(--l0);--c1:var(--l1);--k1:var(--lk1);--k2:var(--lk2);--k3:var(--lk3);--k4:var(--lk4);--k5:var(--lk5);
   --accent:var(--lacc);--on-accent:var(--l0);--accent-hi:var(--lacc-hi);--grad:var(--lgrad);
-  --text:rgb(var(--ltx));--text-2:rgba(var(--ltx),.7);--text-3:rgba(var(--ltx),.48);--line:rgba(var(--ltx),.11);--line-2:rgba(var(--ltx),.2);--surface:rgba(var(--ltx),.03);--surface-2:rgba(var(--ltx),.06);
+  --text:rgb(var(--ltx));--text-2:rgba(var(--ltx),.7);--text-3:rgba(var(--ltx),.62);--line:rgba(var(--ltx),.11);--line-2:rgba(var(--ltx),.2);--surface:rgba(var(--ltx),.03);--surface-2:rgba(var(--ltx),.06);
 }
 /* two tones — ink and a faintly lit ink */
 .tone-dark,.tone-deep{background-color:var(--bg);color:var(--text)}
@@ -69,6 +74,8 @@ html.lenis,html.lenis body{height:auto}
 .lenis.lenis-stopped{overflow:hidden}
 
 .container{width:100%;max-width:calc(var(--container) + var(--pad) * 2);margin-inline:auto;padding-inline:var(--pad)}
+.skip{position:fixed;left:12px;top:-60px;z-index:600;padding:10px 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font:500 12.5px var(--mono);transition:top .2s}
+.skip:focus{top:12px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .mono{font-family:var(--mono);font-size:12.5px}
 .touch-only{display:none}
@@ -90,6 +97,10 @@ html.lenis,html.lenis body{height:auto}
 .status{display:inline-flex;align-items:center;gap:10px;padding:7px 14px 7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 12px var(--mono);letter-spacing:.04em;color:var(--text-2)}
 .dot{position:relative;display:inline-block;width:7px;height:7px;border-radius:50%;background:#7BD88F;flex:none}
 .dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;background:#7BD88F;opacity:.25;animation:ping 2.4s var(--ease) infinite}
+/* off-screen sections (fx.js marks them) keep their CSS animations paused */
+.asleep,.asleep *,.asleep *::before,.asleep *::after{animation-play-state:paused!important}
+/* a soft ring that grows and fades: transform + opacity only, so it never repaints */
+@keyframes ring{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(2.7);opacity:0}}
 @keyframes ping{0%{transform:scale(.5);opacity:.4}80%,100%{transform:scale(1.7);opacity:0}}
 
 /* section heads */
@@ -137,6 +148,7 @@ html.lenis,html.lenis body{height:auto}
 .menu.is-open{opacity:1;visibility:visible;transform:none;transition:opacity .3s,transform .4s var(--ease)}
 .menu nav{display:grid}
 .menu nav a{font:400 30px var(--serif);letter-spacing:-.01em;padding:10px 0;border-bottom:1px solid var(--line)}
+@media (max-width:960px){.menu{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain}.menu nav a{font-size:clamp(22px,6.4vw,28px);padding:8px 0}.menu .btn{flex:none}}
 .menu .btn{justify-content:center;height:54px}
 
 /* reveals */
@@ -152,12 +164,30 @@ html.ready [data-in]{opacity:1;transform:none}
 }
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* phones: iOS zooms into any field under 16px when it's tapped, so none are */
+@media (max-width:720px){input:not([type=range]):not([type=radio]):not([type=checkbox]),select,.gb-form textarea{font-size:16px!important}}
 @media (max-width:1100px){.nav-k{display:none}}
 @media (max-width:960px){
   .nav-links,.nav-cta{display:none}
   .nav-menu{display:block}
 }
+/* phones: smooth over showy. Blur behind fixed bars is re-rendered on every scrolled frame, which mobile GPUs
+   struggle with, so they get solid glass instead; entrances are shorter and taps answer with a small press */
+@media (max-width:720px){
+  .nav.is-scrolled,.dock,.pal,.ach-box,.ask{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .nav.is-scrolled{background:color-mix(in srgb,var(--c0) 94%,transparent)}
+  .dock,.pal{background:color-mix(in srgb,var(--c0) 92%,transparent)}
+  .ach-box,.ask{background:var(--c1)}
+  html.js [data-reveal]{transform:translate3d(0,14px,0);transition-duration:.6s,.7s}
+  html.js .hero [data-in]{transition-duration:.5s,.6s;transition-delay:calc(var(--d,0s) * .15)}
+}
+@media (hover:none){
+  a,button,[role=button],summary,label{-webkit-tap-highlight-color:transparent}
+  .btn,.nav-menu,.nav-theme,.nav-sound,.ask-fab,.dock>*,.tabs button,[role=tab],.proj-case,.rec-tracks button{transition:transform .18s var(--ease),background .25s,color .25s,border-color .25s}
+  .btn:active,.nav-menu:active,.nav-theme:active,.nav-sound:active,.ask-fab:active,.dock>*:active,.tabs button:active,[role=tab]:active,.proj-case:active,.rec-tracks button:active{transform:scale(.96)}
+}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  html.js [data-reveal],html.js [data-in]{opacity:1;transform:none} /* everything readable at once, nothing waits to slide in */
 }

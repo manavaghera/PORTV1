@@ -44,7 +44,9 @@
     const gE = el('g'), gN = el('g');
     gP = el('g');
     svg.append(gE, gP, gN);
-    const size = (name, l) => (l === 3 ? [name.length * 8.4 + 36, 40] : [name.length * 7.5 + 26, 30]);
+    const tight = vertical && W < 420; // phones: smaller pills (and text, via .tight) so three fit in a row
+    svg.classList.toggle('tight', tight);
+    const size = (name, l) => (tight ? (l === 3 ? [name.length * 7.2 + 26, 34] : [name.length * 6.4 + 16, 26]) : l === 3 ? [name.length * 8.4 + 36, 40] : [name.length * 7.5 + 26, 30]);
     const rowsV = [[.03, 2], [.17, 3], [.48, 3], [.84, 2]]; // vertical: [top fraction, columns]
     L.forEach((layer, l) => layer.forEach((name, i) => {
       const [w, h] = size(name, l);
@@ -58,6 +60,7 @@
       } else {
         const [top, cols] = rowsV[l], gap = l === 1 || l === 2 ? .072 : .065;
         x = W * ((i % cols) + .5) / cols; y = H * (top + Math.floor(i / cols) * gap);
+        x = Math.min(Math.max(x, w / 2 + 2), W - w / 2 - 2);
       }
       const g = el('g', { class: `node l${l}`, transform: `translate(${x},${y})` });
       g.append(el('rect', { x: -w / 2, y: -h / 2, width: w, height: h, rx: h / 2 }));

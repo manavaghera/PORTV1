@@ -47,6 +47,9 @@
     c.classList.add('go');
     setTimeout(() => location.reload(), reduced ? 0 : 800);
   };
+  /* on phones the floating picker would sit on top of the text, so the menu carries a copy */
+  const pal = document.querySelector('.pal'), menu = document.getElementById('menu');
+  if (pal && menu) { const copy = pal.cloneNode(true); copy.classList.add('pal-menu'); menu.insertBefore(copy, menu.querySelector('.btn')); }
   $$('.pal [data-pal]').forEach(b => b.addEventListener('click', e => MA.switchPalette(b.dataset.pal, e.clientX, e.clientY)));
   setPalette(root.dataset.palette || 'lumora', false);
   setTimeout(() => root.classList.remove('pal-in'), 1600);
@@ -66,23 +69,38 @@
     const track = $('.band-track', row);
     const w = track.offsetWidth || 1;
     for (let i = 0; i < Math.ceil((innerWidth * 2) / w) + 1; i++) row.append(track.cloneNode(true));
-    return { row, track, v: parseFloat(row.dataset.v) || 1, x: 0 };
+    return { row, track, v: parseFloat(row.dataset.v) || 1, x: 0, w };
   });
   const band = $('.band');
-  let bandOn = false, lastY = scrollY, dir = 1, boost = 0, prev = performance.now();
-  if (band) new IntersectionObserver(es => es.forEach(e => { bandOn = e.isIntersecting; })).observe(band);
+  let bandOn = false, lastY = scrollY, acc = 0, dir = 1, boost = 0, prev = 0, running = false;
+  /* sizes are read when they change, never inside a frame loop (reading layout there forces a reflow every frame) */
+  let max = 1, vh = innerHeight, dockOn = null;
+  const measure = () => { vh = innerHeight; max = Math.max(1, document.documentElement.scrollHeight - vh); rows.forEach(r => { r.w = r.track.offsetWidth || 1; }); };
+  measure();
+  new ResizeObserver(measure).observe(document.body);
+  addEventListener('resize', measure);
+  /* progress bar and dock follow the scroll event itself; no frame loop needed for them */
+  const onScroll = () => {
+    const y = scrollY;
+    bar.style.transform = `scaleX(${(Math.min(1, y / max)).toFixed(4)})`;
+    const on = y > vh * .6;
+    if (dock && on !== dockOn) { dockOn = on; dock.classList.toggle('on', on); }
+    acc += y - lastY;
+    lastY = y;
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  /* the marquee only animates while the band is on screen */
   const loop = now => {
-    const dt = Math.min(.05, (now - prev) / 1000);
+    if (!bandOn || reduced) { running = false; return; }
+    const dt = Math.min(.05, (now - (prev || now)) / 1000);
     prev = now;
-    const max = document.documentElement.scrollHeight - innerHeight;
-    bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
-    if (dock) dock.classList.toggle('on', scrollY > innerHeight * .6);
-    const dy = scrollY - lastY;
-    lastY = scrollY;
+    const dy = acc;
+    acc = 0;
     if (dy) dir = dy > 0 ? 1 : -1;
     boost += (Math.min(60, Math.abs(dy)) - boost) * .08;
-    if (bandOn && !reduced) rows.forEach(r => {
-      const w = r.track.offsetWidth || 1;
+    rows.forEach(r => {
+      const w = r.w;
       r.x -= (55 + boost * 26) * dir * r.v * dt;
       if (r.x <= -w) r.x += w;
       if (r.x > 0) r.x -= w;
@@ -90,7 +108,14 @@
     });
     requestAnimationFrame(loop);
   };
-  requestAnimationFrame(loop);
+  if (band) new IntersectionObserver(es => es.forEach(e => {
+    bandOn = e.isIntersecting;
+    if (bandOn && !running && !reduced) { running = true; prev = 0; acc = 0; requestAnimationFrame(loop); }
+  })).observe(band);
+
+  /* CSS animations inside sections that are off screen are paused: each one would otherwise cost style work every frame */
+  const sleepy = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('asleep', !e.isIntersecting)), { rootMargin: '150px 0px' });
+  $$('main > section, main > .band, footer').forEach(s => sleepy.observe(s));
 
   /* ── magnetic buttons + spotlight cards ── */
   if (fine && !reduced) {
@@ -105,7 +130,7 @@
     });
   }
   if (fine) {
-    $$('.tl-item, .term, .repos, .heat-card, .burn-meter, .prompt, .badge, .gh-stats > div, .viewer-frame, .net-box, .furnace').forEach(el => {
+    $$('.stop, .term, .repos, .heat-card, .prompt, .badge, .gh-stats > div, .viewer-frame, .net-box').forEach(el => {
       el.classList.add('spot');
       const f = document.createElement('i'), r = document.createElement('i');
       f.className = 'spot-fill'; r.className = 'spot-ring';

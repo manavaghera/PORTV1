@@ -1,6 +1,6 @@
 /**
  * Small delights. Sound: generated with WebAudio (no files) — soft clicks,
- * key ticks, a chime for achievements and a quiet garden ambience; off by
+ * key ticks, a chime for achievements, thunder in the dark theme and a quiet ambience; off by
  * default, toggled from the nav and remembered. Paper plane: MA.flyPlane()
  * folds the contact message into a plane that flies off while it sends.
  */
@@ -34,7 +34,8 @@
     key: () => noise(.025, 3200, 2400, .03, 2),
     hit: () => tone(420, 240, .07, 'triangle', .035),
     win: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, f * 1.003, .28, 'triangle', .045, i * .085)),
-    whoosh: () => noise(.9, 400, 2600, .06, .8)
+    whoosh: () => noise(.9, 400, 2600, .06, .8),
+    thunder: () => { noise(2.6, 180, 40, .16, .6); noise(1.2, 900, 120, .05, .5); }
   };
   MA.sfx = name => { if (on && SFX[name]) { try { SFX[name](); } catch (e) { /* audio unavailable */ } } };
 
@@ -52,7 +53,8 @@
     amb = { s, lfo, g };
     const chirp = () => {
       if (!amb || document.hidden) return;
-      if (root.dataset.palette === 'field') { for (let i = 0; i < 6; i++) tone(4600, 4400, .03, 'sine', .006, i * .06); }
+      /* Field: a far-off owl now and then; Lumora: birdsong */
+      if (root.dataset.palette === 'field') { if (Math.random() < .5) { tone(420, 380, .32, 'sine', .014); tone(400, 360, .5, 'sine', .012, .45); } }
       else { const f = 2600 + Math.random() * 1400; tone(f, f * 1.35, .09, 'sine', .01); tone(f * 1.2, f * .9, .12, 'sine', .008, .14); }
     };
     birds = setInterval(chirp, 3800);

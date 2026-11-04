@@ -1,9 +1,9 @@
 /**
  * Kind words — testimonials people leave themselves. The wall loads the
  * published ones from /api/kind-words; "Leave a few words" opens a form that
- * posts there, and each post waits for approval on /admin. Without the backend
- * (a static preview, or before it's set up) the wall shows placeholders and
- * the form offers email instead.
+ * posts there, and each post waits for approval on /admin. Until the first real
+ * words are approved, the wall is just an invitation — no placeholder quotes.
+ * Without the backend the form offers email instead.
  */
 (() => {
   'use strict';
@@ -35,9 +35,12 @@
   };
   const render = items => {
     wall.textContent = '';
-    const cards = items.length
-      ? items.map(k => card(k.message, k.name, k.role, k.relation))
-      : [card('A note from a mentor will live here.', null, 'Mentor', null, 'ghost'), card('A note from a teammate will live here.', null, 'Teammate', null, 'ghost')];
+    wall.classList.toggle('empty', !items.length);
+    const intro = document.querySelector('#quotes .sec-head > p');
+    if (!items.length && intro) intro.textContent = document.documentElement.dataset.palette === 'field'
+      ? 'Worked with me and lived to tell? This wall is waiting for its first words.'
+      : 'Worked with me — as a mentor, teacher or teammate? This wall is waiting for its first words.';
+    const cards = items.map(k => card(k.message, k.name, k.role, k.relation));
     cards.push(askCard(items.length > 0));
     cards.forEach((c, i) => { wall.append(c); reveal(c, i); });
   };

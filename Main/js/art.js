@@ -24,7 +24,7 @@
   const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
   let lite = false, since = 0;
-  let W = 1, H = 1, dpr = 1, M = 28, pinned = true, C = {}, print = null, grain = null;
+  let W = 1, H = 1, dpr = 1, M = 28, pinned = true, C = {}, print = null, grain = null, pw = 1, ph = 1;
   let eyes = [], ribbons = [];
 
   /* ── layout: where the ribbons run and the eyes sit (fractions of the stage) ── */
@@ -166,6 +166,7 @@
   const resize = () => {
     W = cv.clientWidth; H = cv.clientHeight;
     if (!W || !H) return;
+    pw = pin.clientWidth || W; ph = pin.clientHeight || H;
     lite = innerWidth < 760 || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
     dpr = Math.min(devicePixelRatio || 1, lite ? 1 : 1.5);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
@@ -185,7 +186,7 @@
   const target = now => {
     if (now - lastMove < 2200) return [mx, my, true];
     const b = MA.bfly;
-    if (b && b.on) return [...local(b.x, b.y), false];
+    if (b && b.on) return [b.hx * W / pw, b.hy * H / ph, false];
     return [W * .5 + Math.cos(t * .45) * W * .3, H * .5 + Math.sin(t * .7) * H * .28, false];
   };
   const update = (dt, now) => {
@@ -219,6 +220,7 @@
   };
 
   /* where the big pupil is on screen — garden.js sends the butterfly there on scroll */
+  MA.heroFocusLocal = () => { const e = eyes[0]; return e ? [(e.x + e.lx) * pw / W, (e.y + e.ly) * ph / H] : null; }; // hero-relative, no layout read
   MA.heroFocus = () => {
     const e = eyes[0], r = pin.getBoundingClientRect();
     return e ? [r.left + (e.x + e.lx) * r.width / W, r.top + (e.y + e.ly) * r.height / H] : null;

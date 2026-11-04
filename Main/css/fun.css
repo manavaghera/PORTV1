@@ -72,3 +72,44 @@
   .term-x{top:auto;bottom:12px;transform:translate(-50%,8%);height:min(420px,70svh)}
   .term-x.on{transform:translate(-50%,0)}
 }
+
+/* ── first-visit loading screens, one per world (html.booting is set in <head>) ── */
+.boot{display:none}
+html.booting{overflow:hidden}
+html.booting .boot{position:fixed;inset:0;z-index:500;display:grid;place-items:center;background:var(--d0);cursor:pointer}
+.boot-in{position:relative;display:grid;justify-items:center;gap:18px;text-align:center}
+.boot-field,[data-palette="field"] .boot-lumora{display:none}
+[data-palette="field"] .boot-field{display:grid}
+.boot-name{position:relative;font:400 clamp(40px,7vw,76px)/1 var(--serif);letter-spacing:-.01em;color:rgb(var(--dtx))}
+.boot-name em{font-style:italic;color:var(--dk3)}
+.boot-msg{position:relative;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(var(--dtx),.5)}
+.boot-msg b{display:inline-block;min-width:2.1em;text-align:right;font-weight:500;color:rgb(var(--dtx));font-variant-numeric:tabular-nums}
+.boot.out{opacity:0;transition:opacity .55s ease .2s}
+/* Lumora: an eye opens, looks around, then you fall into its pupil */
+.boot-eye{width:min(220px,52vw);overflow:visible;transition:transform .75s cubic-bezier(.6,0,.4,1),opacity .45s ease .25s}
+.boot-rim{fill:var(--art-paper);stroke:var(--d0);stroke-width:2}
+.boot-lid{transform-box:fill-box;transform-origin:50% 50%;animation:bootOpen 1.1s cubic-bezier(.7,0,.2,1) .25s both}
+@keyframes bootOpen{from{transform:scaleY(.04)}}
+.boot-iris>circle:first-child{fill:var(--art-hue)}
+.boot-pupil{fill:var(--d0)}
+.boot-glint{fill:var(--art-paper)}
+.boot-iris{animation:bootLook 2.6s ease-in-out 1s infinite}
+@keyframes bootLook{0%,100%{transform:translateX(0)}30%{transform:translateX(-14px)}65%{transform:translateX(12px)}}
+.boot.out .boot-eye{transform:scale(16);opacity:0}
+.boot.out .boot-lumora p{opacity:0;transition:opacity .25s}
+/* Field: a blood moon rises through fog, and the name flickers like a dying bulb */
+.boot-moon{width:118px;height:118px;border-radius:50%;background:radial-gradient(circle at 38% 36%,#E9B3A0,#C23A2B 55%,#6A1912);
+  box-shadow:0 0 60px 10px rgba(194,58,43,.45),0 0 170px 50px rgba(194,58,43,.16);animation:bootRise 1.7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes bootRise{from{transform:translateY(70px);opacity:0}}
+.boot-fog{position:absolute;left:-45vw;right:-45vw;top:70px;height:130px;pointer-events:none;
+  background:radial-gradient(40% 50% at 30% 50%,rgba(217,206,190,.16),transparent 70%),radial-gradient(35% 45% at 72% 60%,rgba(217,206,190,.12),transparent 70%);animation:bootFog 7s linear infinite}
+@keyframes bootFog{to{transform:translateX(14vw)}}
+.boot-field .boot-name{animation:bootFlicker 2.4s steps(1) .35s both}
+@keyframes bootFlicker{0%{opacity:0}9%{opacity:1}11%{opacity:.15}15%{opacity:1}47%{opacity:.85}49%{opacity:.08}53%{opacity:1}100%{opacity:1}}
+[data-palette="field"] .boot.out{transition:opacity .4s steps(4) .1s}
+/* phones: a quicker exit that still finishes before the intro is removed (350 ms) */
+@media (max-width:720px){
+  .boot.out{transition:opacity .28s ease .04s}
+  .boot-eye{transition:transform .32s cubic-bezier(.6,0,.4,1),opacity .24s ease .08s}
+  [data-palette="field"] .boot.out{transition:opacity .3s steps(3)}
+}

@@ -9,16 +9,16 @@
   const MA = window.MA = window.MA || {};
   const EMAIL = 'manavaghera@yahoo.com';
   const LINKS = {
-    github: 'https://github.com/manavaghera', linkedin: 'https://www.linkedin.com/in/manav-aghera', x: 'https://x.com/aghera_manav',
+    github: 'https://github.com/manavaghera', linkedin: 'https://www.linkedin.com/in/manavaghera', x: 'https://x.com/aghera_manav',
     chronus: 'https://github.com/manavaghera/CHRONUS', autonomouscontent: 'https://github.com/manavaghera/Multi-agent-blog',
-    'llm-newshub': 'https://github.com/manavaghera/LLM-NEWS-', dermalense: 'https://github.com/manavaghera/DERMALENSE.AI', 'mcp-playground': 'https://github.com/manavaghera/mcp-demo'
+    newssense: 'https://github.com/manavaghera/LLM-NEWS-', 'health-risk': 'https://github.com/manavaghera/Predicting-Student-Health-Risk', 'clip-studio': 'https://github.com/manavaghera/Twitch-Bulk-Downloader', dermalense: 'https://github.com/manavaghera/DERMALENSE.AI', 'mcp-playground': 'https://github.com/manavaghera/mcp-demo'
   };
-  const PROJECTS = [['chronus', 'memory-grounded RAG research — local, deterministic'], ['autonomouscontent', 'four-agent LangGraph pipeline, 78.7/100 avg'], ['fasal-ai', 'offline crop-disease detection, Hindi + Gujarati voice'], ['llm-newshub', 'news clustering + generated summaries'], ['dermalense', 'skin-health vision, inference in the tab'], ['mcp-playground', 'Model Context Protocol servers and tools']];
-  const SECTIONS = ['top', 'about', 'now', 'build', 'work', 'services', 'stack', 'rag', 'lab', 'arcade', 'commits', 'research', 'awards', 'quotes', 'tokens', 'journey', 'contact'];
+  const PROJECTS = [['chronus', 'memory-grounded RAG research — local, deterministic'], ['autonomouscontent', 'research, writer + validator agents, posts score 82–89/100'], ['health-risk', 'gradient-boosting ensemble, 0.952 balanced accuracy, Kaggle top 1%'], ['newssense', 'AI news platform that fact-checks itself, 211 tests'], ['clip-studio', 'Twitch clips → captioned Shorts, Whisper + ffmpeg'], ['fasal-ai', 'offline crop-disease detection, Hindi + Gujarati voice'], ['dermalense', 'skin-health vision, inference in the tab'], ['mcp-playground', 'Model Context Protocol servers and tools']];
+  const SECTIONS = ['top', 'about', 'now', 'build', 'work', 'services', 'stack', 'rag', 'lab', 'commits', 'research', 'awards', 'quotes', 'journey', 'contact'];
   const FILES = {
     'about.txt': 'Manav Aghera — AI/ML engineer from Vadodara, India.\nFinal-year B.Tech CS at Parul University. Builds RAG that stays grounded,\nagents that recover on their own, and vision small enough to run offline.',
     'skills.txt': 'languages   Python · TypeScript · JavaScript · SQL\nml          PyTorch · TensorFlow · TF Lite · scikit-learn · Hugging Face · YOLOv8 · Whisper · ONNX Runtime\nllm         LangChain · LangGraph · Llama 3 · Ollama · MCP\nretrieval   Sentence-BERT · ChromaDB\nship        FastAPI · Flask · React · Docker · MLflow · Git',
-    'contact.txt': `email     ${EMAIL}\ngithub    github.com/manavaghera\nlinkedin  linkedin.com/in/manav-aghera`,
+    'contact.txt': `email     ${EMAIL}\ngithub    github.com/manavaghera\nlinkedin  linkedin.com/in/manavaghera`,
     'resume.pdf': null
   };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -32,7 +32,7 @@
   const go = id => { const t = document.getElementById(id); if (!t) return false; close(); if (MA.goTo) MA.goTo('#' + id); else t.scrollIntoView({ behavior: 'smooth' }); return true; };
 
   const CMDS = {
-    help: () => print('commands\n  whoami · ls · cat <file> · projects · open <name> · goto <section>\n  skills · neofetch · git log · theme <lumora|field|light|dark>\n  achievements · play <bot|quiz|race|breaker> · history · clear · exit\n  …and a few you\'ll have to guess.'),
+    help: () => print('commands\n  whoami · ls · cat <file> · projects · open <name> · goto <section>\n  skills · neofetch · git log · theme <lumora|field|light|dark>\n  achievements · play breaker · history · clear · exit\n  …and a few you\'ll have to guess.'),
     whoami: () => print('a visitor with good taste in portfolios'),
     ls: a => (a[0] === 'projects' ? CMDS.projects() : print('about.txt  skills.txt  contact.txt  resume.pdf  projects/')),
     cat: a => {
@@ -62,10 +62,9 @@
     },
     achievements: () => { const b = document.querySelector('.dock-ach'); print(b ? `${b.textContent.trim()} unlocked — opening the list` : 'no trophies here'); if (b) { close(); setTimeout(() => b.click(), 50); } },
     play: a => {
-      const g = (a[0] || '').toLowerCase(), tab = { bot: 'arcTabBot', quiz: 'arcTabQuiz', race: 'arcTabRace' }[g];
-      if (tab) { go('arcade'); setTimeout(() => { const t = document.getElementById(tab); if (t) t.click(); }, 700); return; }
+      const g = (a[0] || 'breaker').toLowerCase();
       if (g === 'breaker') { go('commits'); setTimeout(() => { const b = document.getElementById('heatPlay'); if (b) b.click(); }, 900); return; }
-      print('usage: play <bot|quiz|race|breaker>');
+      print('usage: play breaker');
     },
     sudo: a => {
       if (a.join(' ').toLowerCase() === 'hire manav') {
@@ -113,6 +112,7 @@
   });
   box.querySelector('.term-x-bar button').addEventListener('click', () => close());
   const open = () => {
+    if (MA.track) MA.track('play', 'terminal');
     if (!box.hidden) return;
     opener = document.activeElement;
     box.hidden = false;

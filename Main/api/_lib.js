@@ -106,4 +106,4 @@ const mail = async ({ subject, text, replyTo }) => {
 
 const RELATIONS = ['mentor', 'teacher', 'teammate', 'classmate', 'colleague', 'client', 'friend', 'other'];
 
-module.exports = { env, httpError, send, handle, readJSON, redis, pipeline, parse, clean, line, isEmail, newId, isId, looksLikeBot, limit, sameText, isHttps, newSession, sessionCookie, isAdmin, mail, RELATIONS };
+module.exports = { env, httpError, send, handle, readJSON, redis, pipeline, parse, clean, line, isEmail, newId, isId, looksLikeBot, limit, ipKey, sameText, isHttps, newSession, sessionCookie, isAdmin, mail, RELATIONS };

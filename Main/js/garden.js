@@ -1,7 +1,7 @@
 /**
  * Hero name — it types itself out, then a garden grows through it: a vine
- * draws across each line, leaves unfurl, roses bloom (wheat and seed heads in
- * the Field palette). Then a butterfly drops by. It trails the cursor, lands
+ * draws across each line, leaves unfurl, roses bloom (thorns and blood roses
+ * in the dark Field palette). Then a butterfly — or, in Field, a bat — drops by. It trails the cursor, lands
  * on a flower when you stop, startles when you click and, when you scroll,
  * flies into the hero's focus — Lumora's big eye, or Field's sun. Its position is shared as
  * MA.bfly so the eyes in the art (art.js) can watch it.
@@ -34,7 +34,17 @@
   });
 
   /* ── typed role line ── */
-  const ROLES = ['AI/ML engineer', 'building RAG that stays grounded', 'shipping multi-agent systems', 'running vision offline', 'Kaggle top 1%, twice'];
+  /* what I build, in plain words — and in the dark world, the same things said darker */
+  const ROLES = field
+    ? ['AI that doesn\'t flinch at 3 a.m.', 'agents that keep going when everything breaks', 'models that see in the dark — fully offline', 'answers that never invent a thing', 'systems that outlive the demo']
+    : ['assistants that answer with receipts', 'agents that finish what they start', 'vision that works without Wi-Fi', 'AI people actually use', 'AI that actually ships'];
+  if (field) {
+    if (typeEl) typeEl.textContent = 'AI that survives the night';
+    const kick = pin.querySelector('.hero-k');
+    if (kick && kick.lastChild) kick.lastChild.textContent = 'Open to ML/AI internships · if you dare';
+    const st = $('statement');
+    if (st) st.innerHTML = 'Demos die at midnight. Mine survive <em>real users, messy data</em> and dead networks.';
+  }
   if (typeEl && !reduced) {
     let r = 0, n = typeEl.textContent.length, dir = -1;
     const step = () => {
@@ -45,7 +55,7 @@
       if (dir < 0 && n <= 0) { dir = 1; r = (r + 1) % ROLES.length; }
       setTimeout(step, dir > 0 ? 55 + Math.random() * 40 : 28);
     };
-    setTimeout(step, 4200);
+    (MA.booted || Promise.resolve()).then(() => setTimeout(step, 4200));
   }
 
   /* ── the name types itself; a zero-width caret rides along without shifting letters ── */
@@ -84,24 +94,6 @@
     });
     return { petal: petal + 'Z', curl };
   };
-  /* ── Field flora: an ear of wheat (100 tall, base at 0,0) and a dandelion clock (radius 50) ── */
-  const WHEAT = (() => {
-    let kern = '', awn = '';
-    for (let i = 0; i < 7; i++) {
-      const y = f(-60 - i * 6.2), ya = f(-63 - i * 6.2), yb = f(-77 - i * 6.2);
-      kern += `<ellipse class="kern" cx="-3.2" cy="${y}" rx="2.7" ry="5" transform="rotate(-24 -3.2 ${y})"/><ellipse class="kern" cx="3.2" cy="${y}" rx="2.7" ry="5" transform="rotate(24 3.2 ${y})"/>`;
-      awn += `M-5 ${ya}L-11 ${yb}M5 ${ya}L11 ${yb}`;
-    }
-    return { kern: kern + '<ellipse class="kern" cx="0" cy="-104" rx="2.5" ry="5"/>', awn: awn + 'M0 -108L0 -124' };
-  })();
-  const PUFF = (() => {
-    let rays = '', tips = '';
-    for (let i = 0; i < 22; i++) {
-      const a = i / 22 * TAU + .1, x = f(Math.cos(a) * 44), y = f(Math.sin(a) * 44);
-      rays += `M0 0L${x} ${y}`; tips += `<circle class="tip" cx="${x}" cy="${y}" r="3.2"/>`;
-    }
-    return `<path class="puff" d="${rays}"/>${tips}<circle class="core" cx="0" cy="0" r="7"/>`;
-  })();
   /* Catmull-Rom through the points, as cubic Béziers */
   const spline = pts => {
     let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
@@ -151,26 +143,13 @@
         svg('path', { class: 'vein', d: `M0 0L${f(len * .78)} 0` }, u);
       }
       if (field) {
-        /* wheat rising behind the letters, and a few seed heads in front */
-        const count = Math.max(5, Math.round((x1 - x0) / (h * .26)));
-        for (let i = 0; i < count; i++) {
-          const x = x0 - h * .12 + (i + .2 + r() * .6) / count * (x1 - x0 + h * .24), tall = h * (li === 0 ? .42 + r() * .2 : .55 + r() * .3);
-          const g = svg('g', { transform: `translate(${f(x)} ${f(y + (r() - .5) * h * .1)}) rotate(${f((r() - .5) * 26)}) scale(${(tall / 100).toFixed(3)})` }, back);
-          const s = svg('g', { class: 'sprout', style: `--d:${(t0 + VINE * .2 + (x - xs) / (xe - xs) * VINE).toFixed(2)}s` }, g);
-          svg('path', { class: 'stem', d: `M0 0Q${f((r() - .5) * 10)} -30 0 -58` }, s);
-          const ear = svg('g', { class: 'ear' }, s);
-          ear.innerHTML = WHEAT.kern;
-          svg('path', { class: 'awn', d: WHEAT.awn }, s);
-          roses.push({ el: ear, rad: tall * .1 });
+        /* thorns along the vine, alternating sides, growing as it reaches them */
+        for (let s2 = L * .06, side = 1; s2 < L * .94; s2 += h * .17, side = -side) {
+          const p = vine.getPointAtLength(s2), q = vine.getPointAtLength(Math.min(L, s2 + 2)), len = h * (.045 + r() * .03);
+          const g = svg('g', { transform: `translate(${f(p.x)} ${f(p.y)}) rotate(${f(Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI + side * 80)})` }, back);
+          const u = svg('g', { class: 'unfurl', style: `--d:${(t0 + s2 / L * VINE).toFixed(2)}s` }, g);
+          svg('path', { class: 'thorn', d: `M0 ${f(-len * .28)}L${f(len)} 0L0 ${f(len * .28)}Z` }, u);
         }
-        for (let i = 0, n2 = 2 + (r() * 2 | 0); i < n2; i++) {
-          const x = x0 + r() * (x1 - x0), rad = h * (.1 + r() * .05), yy = li === 0 ? top + h * (.02 + r() * .15) : top + h * (.9 + r() * .1);
-          const g = svg('g', { transform: `translate(${f(x)} ${f(yy)}) scale(${(rad / 50).toFixed(3)})` }, front);
-          const b = svg('g', { class: 'bloom', style: `--d:${(t0 + VINE * .6 + r() * .8).toFixed(2)}s` }, g);
-          b.innerHTML = PUFF;
-          roses.push({ el: g, rad });
-        }
-        return;
       }
       /* roses: above the caps on the first line, under the baseline on the last, some riding the vine */
       const count = Math.max(4, Math.round((x1 - x0) / (h * .4))), placed = [];
@@ -181,7 +160,7 @@
         placed.push([x, yy, rad]);
       }
       placed.sort((p, q) => p[0] - q[0]).forEach(([x, yy, rad]) => {
-        const pp = rosePaths(r), tint = r() < .28;
+        const pp = rosePaths(r), tint = r() < (field ? .78 : .28);
         const g = svg('g', { class: 'rose' + (tint ? ' t' : ''), transform: `translate(${f(x)} ${f(yy)}) rotate(${f(r() * 360)}) scale(${(rad / 50).toFixed(3)})` }, front);
         const b = svg('g', { class: 'bloom', style: `--d:${(t0 + VINE * .25 + (x - xs) / (xe - xs) * VINE).toFixed(2)}s` }, g);
         svg('path', { class: 'petal', d: pp.petal }, b);
@@ -192,13 +171,18 @@
   };
 
   /* ── the butterfly ── */
-  const WING = '<path class="fw" d="M-1-3C-6-16-20-23-22-13C-23-6-14-2-1-1Z"/><path class="hw" d="M-1 0C-12 1-19 8-15 15C-11 20-4 11-1 3Z"/>'
-    + '<path class="vn" d="M-2-2L-17-14M-2-2L-19-7M-2 1L-13 11"/><circle class="sp" cx="-16" cy="-13" r="2.3"/><circle class="sp" cx="-19.4" cy="-8.6" r="1.3"/><circle class="sp" cx="-12" cy="10.5" r="1.6"/>';
+  const WING = field
+    ? '<path class="bw" d="M-1-3C-5-9-12-11-15-9C-17-12-21-11-23-8C-21-6-20-3-21 0C-18-2-15-1-13 2C-11 0-8 0-6 3C-4 1-2 1-1 2Z"/>'
+    : '<path class="fw" d="M-1-3C-6-16-20-23-22-13C-23-6-14-2-1-1Z"/><path class="hw" d="M-1 0C-12 1-19 8-15 15C-11 20-4 11-1 3Z"/>'
+      + '<path class="vn" d="M-2-2L-17-14M-2-2L-19-7M-2 1L-13 11"/><circle class="sp" cx="-16" cy="-13" r="2.3"/><circle class="sp" cx="-19.4" cy="-8.6" r="1.3"/><circle class="sp" cx="-12" cy="10.5" r="1.6"/>';
+  const BODY = field
+    ? '<path class="bd" d="M-2.4-6.5-3.4-11.5-.6-8.4ZM2.4-6.5 3.4-11.5.6-8.4Z"/><ellipse class="bd" cx="0" cy="-1" rx="2.6" ry="6.5"/><circle class="be" cx="-1" cy="-6" r=".75"/><circle class="be" cx="1" cy="-6" r=".75"/>'
+    : '<path class="ant" d="M-.6-9Q-3-16-5.5-19.5M.6-9Q3-16 5.5-19.5"/><ellipse class="bd" cx="0" cy="0" rx="1.7" ry="8.5"/><circle class="bd" cx="0" cy="-9" r="2"/>';
   const bf = document.createElement('div');
   bf.className = 'bfly';
   bf.setAttribute('aria-hidden', 'true');
-  bf.innerHTML = `<svg viewBox="-24 -24 48 48"><g class="wl">${WING}</g><g class="wr"><g transform="scale(-1 1)">${WING}</g></g>`
-    + '<path class="ant" d="M-.6-9Q-3-16-5.5-19.5M.6-9Q3-16 5.5-19.5"/><ellipse class="bd" cx="0" cy="0" rx="1.7" ry="8.5"/><circle class="bd" cx="0" cy="-9" r="2"/></svg>';
+  /* each wing is its own layer, so a flap is a GPU transform, not an SVG re-layout every frame */
+  bf.innerHTML = `<i class="wl"><svg viewBox="-24 -24 48 48">${WING}</svg></i><i class="wr"><svg viewBox="-24 -24 48 48"><g transform="scale(-1 1)">${WING}</g></svg></i><svg class="bb" viewBox="-24 -24 48 48">${BODY}</svg>`;
   pin.append(bf);
   MA.bflyHTML = bf.innerHTML; // companion.js flies the same butterfly down the rest of the page
   const wl = bf.querySelector('.wl'), wr = bf.querySelector('.wr');
@@ -223,10 +207,8 @@
 
   const render = wing => {
     bf.style.transform = `translate3d(${f(B.x)}px,${f(B.y)}px,0) rotate(${B.h.toFixed(3)}rad) scale(${B.s.toFixed(3)})`;
-    const t = `scale(${wing.toFixed(3)} 1)`;
-    wl.setAttribute('transform', t); wr.setAttribute('transform', t);
-    const b = pin.getBoundingClientRect();
-    MA.bfly = { x: b.left + B.x, y: b.top + B.y, on: B.st !== 'off' && B.s > .3 };
+    wl.style.transform = wr.style.transform = `scaleX(${wing.toFixed(3)})`;
+    MA.bfly = { hx: B.x, hy: B.y, on: B.st !== 'off' && B.s > .3 }; // hero-relative: nobody has to measure layout to use it
   };
   const land = rs => { B.st = 'perch'; B.rose = rs; B.spot = roseAt(rs); B.rest = 3 + Math.random() * 5; B.restH = (Math.random() - .5) * .9; };
 
@@ -242,8 +224,8 @@
     B.panic = Math.max(0, B.panic - dt);
     if (q > .012) {
       /* scrolling: off into the big eye — or, in Field, into the setting sun */
-      const e = MA.heroFocus && MA.heroFocus(), b = pin.getBoundingClientRect();
-      [tx, ty] = e ? [e[0] - b.left, e[1] - b.top] : [B.x, -80];
+      const e = MA.heroFocusLocal && MA.heroFocusLocal();
+      [tx, ty] = e || [B.x, -80];
       if (B.st !== 'away') { B.st = 'away'; B.rose = null; }
       speed = 620;
       B.s += (Math.max(.05, 1 - smooth(.012, .12, q)) - B.s) * Math.min(1, dt * 6);
@@ -300,5 +282,6 @@
       requestAnimationFrame(tick);
     }, 2600);
   });
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(start);
+  /* after the fonts — and after the loading screen, so the name types itself where you can see it */
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => MA.booted).then(start);
 })();

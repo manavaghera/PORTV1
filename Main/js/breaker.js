@@ -129,8 +129,9 @@
     card.classList.add('playing');
     btn.textContent = '✕ quit game';
     cv = document.createElement('canvas'); cv.className = 'breaker';
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'Commit Breaker: move the paddle with the left and right arrow keys, press Space to launch the ball');
     hud = document.createElement('p'); hud.className = 'breaker-hud mono';
-    msg = document.createElement('p'); msg.className = 'breaker-msg mono';
+    msg = document.createElement('p'); msg.className = 'breaker-msg mono'; msg.setAttribute('role', 'status');
     card.append(cv, hud, msg);
     ctx = cv.getContext('2d');
     cv.addEventListener('pointermove', onMove);

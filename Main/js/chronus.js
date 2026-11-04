@@ -5,6 +5,8 @@
 (() => {
   'use strict';
   const wrap = document.getElementById('orbit');
+  /* the rings only turn while they're on screen (SVG rotation can't run on the GPU, so it costs every frame) */
+  if (wrap) new IntersectionObserver(es => wrap.classList.toggle('on', es[0].isIntersecting), { rootMargin: '100px 0px' }).observe(wrap);
   const list = document.getElementById('phases');
   if (!wrap || !list) return;
   const svg = wrap.querySelector('svg'), NS = 'http://www.w3.org/2000/svg';

@@ -1,0 +1,33 @@
+/* ── /notes: the index and the reader ── */
+.notes-home{margin-left:auto;font-size:12px;color:var(--text-2)}
+.notes-home:hover{color:var(--text)}
+.notes h1{margin:56px 0 18px;font-size:clamp(42px,6.4vw,72px);line-height:1}
+.notes h1 em{font-style:italic;color:var(--accent)}
+.notes-sub{max-width:36em;font-size:clamp(16px,1.4vw,18.5px);line-height:1.6;color:var(--text-2)}
+.notes-list{list-style:none;display:grid;margin-top:44px;border-top:1px solid var(--line)}
+.notes-item a{display:grid;gap:8px;padding:26px 4px;border-bottom:1px solid var(--line);transition:padding .35s var(--ease)}
+.notes-item a:hover,.notes-item a:focus-visible{padding-left:14px}
+.notes-item span{font-size:11.5px;color:var(--text-3)}
+.notes-item h2{font:400 clamp(26px,3vw,34px)/1.15 var(--serif);color:var(--text)}
+.notes-item a:hover h2{color:var(--accent)}
+.notes-item p{max-width:42em;color:var(--text-2);line-height:1.55}
+.note{max-width:680px;padding-bottom:20px}
+.note-k{margin-top:56px;font-size:12px;color:var(--text-3)}
+.note h1{margin:14px 0 30px;font-size:clamp(36px,5.6vw,60px);line-height:1.05}
+.note h1:focus{outline:none}
+.note-body{display:grid;gap:18px;font-size:17.5px;line-height:1.72;color:var(--text-2)}
+.note-body h2,.note-body h3,.note-body h4{margin-top:18px;font:400 clamp(24px,2.6vw,30px)/1.2 var(--serif);color:var(--text)}
+.note-body h3,.note-body h4{font-size:22px}
+.note-body strong{color:var(--text);font-weight:600}
+.note-body em{font-style:italic}
+.note-body a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.note-body ul,.note-body ol{display:grid;gap:8px;padding-left:1.3em}
+.note-body li::marker{color:var(--accent)}
+.note-body blockquote{padding:4px 0 4px 20px;border-left:2px solid var(--accent);font:400 22px/1.45 var(--serif);color:var(--text)}
+.note-body code{padding:1px 6px;border-radius:6px;background:var(--surface-2);font:14.5px var(--mono);color:var(--text)}
+.note-body pre{overflow-x:auto;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.note-body pre code{padding:0;background:none;font-size:13.5px;line-height:1.6}
+.note-body hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.note-nav{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:56px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px}
+.note-nav a{color:var(--text-2)}
+.note-nav a:hover,.note-nav a:focus-visible{color:var(--accent)}
